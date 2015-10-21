@@ -1,0 +1,15 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "1337000001.5"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "name": "echo"
+  },
+  {
+    "name": "$result",
+    "recipe_result": null,
+    "status_code": 0
+  }
+]

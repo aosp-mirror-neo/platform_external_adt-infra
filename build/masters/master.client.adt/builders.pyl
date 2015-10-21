@@ -1,0 +1,163 @@
+{
+  "master_base_class": "Master3",
+  "master_port": 8200,
+  "master_port_alt": 8400,
+  "slave_port": 8300,
+  "templates": ["./templates"],
+  "public_html": ["./public_html"],
+
+  "builders": {
+     "Ubuntu 12.04 HD Graphics 4000": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_linux",
+       "slave_pools": ["ubuntu-12_04-intel-hd-4000"],
+     },
+     "Ubuntu 14.04 HD 4400": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_linux",
+       "slave_pools": ["ubuntu-14_04-intel-hd-4400"],
+     },
+     "Ubuntu 14.04 Quadro 600": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_linux",
+       "slave_pools": ["ubuntu-14_04-nvidia-quadro-600"],
+     },
+     "Ubuntu 15.04 Quadro K600": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_linux",
+       "slave_pools": ["ubuntu-15_04-nvidia-quadro-k600"],
+     },
+     "Win 7 32-bit HD 4400": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_windows",
+       "slave_pools": ["win-7-32-intel-hd-4400"],
+     },
+     "Win 7 64-bit HD 4400": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_windows",
+       "slave_pools": ["win-7-64-intel-hd-4400"],
+     },
+     "Win 8 64-bit Quadro 600": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_windows",
+       "slave_pools": ["win-8-64-nvidia-quadro-600"],
+     },
+     "Win 8.1 64-bit Quadro 600": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_windows",
+       "slave_pools": ["win-8_1-64-nvidia-quadro-600"],
+     },
+     "Win 10 64-bit Quadro 600": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_windows",
+       "slave_pools": ["win-10-64-nvidia-quadro-600"],
+     },
+  },
+
+  "schedulers": {
+    "emu_gspoller_linux": {
+      "gs_bucket": "android-build-emu",
+      "gs_path": "builds/aosp-emu-master-dev-linux-sdk_tools_linux/",
+      "periodicBuildTimer": 300,
+      "identifier": "linux-tools",
+      "type": "gs_poller",
+    },
+#    "emu_gspoller_mac": {
+#      "gs_bucket": "android-build-emu",
+#      "gs_path": "builds/aosp-emu-master-dev-mac-sdk_tools_mac/",
+#      "periodicBuildTimer": 30,
+#      "identifier": "darwin-tools",
+#      "type": "gs_poller",
+#    },
+    "emu_gspoller_windows": {
+      "gs_bucket": "android-build-emu",
+      "gs_path": "builds/aosp-emu-master-dev-linux-sdk_tools_linux/",
+      "periodicBuildTimer": 300,
+      "identifier": "windows-tools",
+      "type": "gs_poller",
+    },
+ },
+
+  "slave_pools": {
+    #"adt-master": {
+     # "slave_data": {
+      #  "bits": 64,
+       # "os": "linux",
+        #"version": "trusty",
+      #},
+      #"slaves": ['chromeos1-row3-rack2-host1'],
+    #},
+    "ubuntu-12_04-intel-hd-4000": {
+      "slave_data": {
+        "bits": 64,
+        "os": "linux",
+        "version": "precise",
+      },
+      "slaves": ['chromeos1-row3-rack3-host1'],
+    },
+    "ubuntu-14_04-intel-hd-4400": {
+      "slave_data": {
+        "bits": 64,
+        "os": "linux",
+        "version": "trusty",
+      },
+      "slaves": ['chromeos1-row3-rack3-host2'],
+    },
+    "ubuntu-14_04-nvidia-quadro-600": {
+      "slave_data": {
+        "bits": 64,
+        "os": "linux",
+        "version": "trusty",
+      },
+      "slaves": ['chromeos1-row3-rack3-host5'],
+    },
+    "ubuntu-15_04-nvidia-quadro-k600": {
+      "slave_data": {
+        "bits": 64,
+        "os": "linux",
+        "version": "vivid",
+      },
+      "slaves": ['chromeos1-row3-rack2-host2'],
+    },
+    "win-7-32-intel-hd-4400": {
+      "slave_data": {
+        "bits": 32,
+        "os": "win",
+        "version": "win7",
+      },
+      "slaves": ['chromeos1-row3-rack3-host3'],
+    },
+    "win-7-64-intel-hd-4400": {
+      "slave_data": {
+        "bits": 64,
+        "os": "win",
+        "version": "win7",
+      },
+      "slaves": ['chromeos1-row3-rack2-host3'],
+    },
+    "win-8-64-nvidia-quadro-600": {
+      "slave_data": {
+        "bits": 64,
+        "os": "win",
+        "version": "win8",
+      },
+      "slaves": ['chromeos1-row3-rack2-host5'],
+    },
+    "win-8_1-64-nvidia-quadro-600": {
+      "slave_data": {
+        "bits": 64,
+        "os": "win",
+        "version": "win8.1",
+      },
+      "slaves": ['chromeos1-row3-rack2-host4'],
+    },
+    "win-10-64-nvidia-quadro-600": {
+      "slave_data": {
+        "bits": 64,
+        "os": "win",
+        "version": "win10",
+      },
+      "slaves": ['chromeos1-row3-rack3-host4'],
+    },
+  },
+}
