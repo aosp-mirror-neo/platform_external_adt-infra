@@ -99,7 +99,6 @@ def get_factory_properties_from_disk(mastername, buildername):
     if name == mastername:
       master_path = path
 
-  print 'navabi: master_path: %s' % master_path
   if not master_path:
     raise LookupError('master "%s" not found.' % mastername)
 
@@ -210,7 +209,6 @@ def clean_old_recipe_engine():
 
 def main(argv):
   opts, _ = get_args(argv)
-  print 'navabi: factory_properties: %s\nbuild_properties: %s\nmaster_overrides_slave: %s' % (opts.factory_properties, opts.build_properties, opts.master_overrides_slave)
   properties = get_recipe_properties(
       opts.factory_properties, opts.build_properties,
       opts.master_overrides_slave)

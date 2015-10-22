@@ -44,7 +44,6 @@ def main(argv):
   args = parser.parse_args(argv)
 
   result = master_cfg_utils.LoadConfig(args.master)
-  print 'navabi: result = %s' % result
   json.dump(result['BuildmasterConfig'],
             args.output,
             cls=BuildbotJSONEncoder,

@@ -519,27 +519,7 @@ def GetGClientPath():
   return gclient_path
 
 
-def MaybeUpgradeSVNCheckoutToGit():
-  """Executes SVN-to-Git conversion script.
-
-  The script may upgrade SVN checkout to Git if necessary and if the host is
-  whitelisted. The output of the script is appended to ~/slave_svn_to_git.log.
-  """
-  try:
-    upgrade_script = os.path.join(
-        BUILD_DIR, 'scripts', 'tools', 'slave_svn_to_git.py')
-    log_file_path = os.path.join(os.path.expanduser('~'),
-                                 'slave_svn_to_git.log')
-    with open(log_file_path, 'a') as log_file:
-      upgrade_command = [sys.executable, upgrade_script]
-      subprocess.call(upgrade_command, stderr=subprocess.STDOUT,
-                      stdout=log_file)
-  except Exception as e:
-    print 'Unexpected exception when running SVN-to-Git upgrade script: %s' % e
-
-
 if '__main__' == __name__:
-  # MaybeUpgradeSVNCheckoutToGit()
   # skip_sync_arg = '--no-gclient-sync'
   # if skip_sync_arg not in sys.argv:
   #   UseBotoPath()
@@ -548,6 +528,6 @@ if '__main__' == __name__:
   #         '(%s) `gclient sync` failed; proceeding anyway...' % sys.argv[0])
   #   os.execv(sys.executable, [sys.executable] + sys.argv + [skip_sync_arg])
 
-  # Remove skip_sync_arg from arg list.  Needed because twistd.
+  # # Remove skip_sync_arg from arg list.  Needed because twistd.
   # sys.argv.remove(skip_sync_arg)
   main()
