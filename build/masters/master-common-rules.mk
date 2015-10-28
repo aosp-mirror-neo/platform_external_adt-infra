@@ -47,22 +47,6 @@ start: notify printstep bootstrap
 else
 start: notify printstep
 endif
-ifndef NO_REVISION_AUDIT
-	@if [ ! -f "$(GCLIENT)" ]; then \
-	    echo "gclient not found.  Add depot_tools to PATH or use DEPS checkout."; \
-	    exit 2; \
-	fi
-	$(GCLIENT) revinfo -a | tee revinfo.log >> actions.log || true
-	$(GCLIENT) diff >> actions.log || true
-	@($(INFRA_RUNPY) infra.tools.send_monitoring_event \
-                   --service-event-revinfo=$(CURRENT_DIR)/revinfo.log \
-                   --service-event-type=START \
-                   --event-mon-run-type=prod \
-                   --event-mon-service-name \
-                   buildbot/master/$(MASTERPATH) \
-   || echo 'Running send_monitoring_event failed, skipping sending events.' \
-  ) 2>&1 | tee -a actions.log
-endif
 	@echo 'Now running Buildbot master.'
 	PYTHONPATH=$(PYTHONPATH) python $(SCRIPTS_DIR)/common/twistd --no_save -y buildbot.tac
 

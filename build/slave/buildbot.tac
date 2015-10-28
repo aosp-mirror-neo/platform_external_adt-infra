@@ -14,8 +14,6 @@ import sys
 from twisted.application import service
 from buildslave.bot import BuildSlave
 
-# Register the commands.
-from slave import chromium_commands
 # Load default settings.
 import config
 

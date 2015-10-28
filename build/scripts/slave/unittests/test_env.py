@@ -121,5 +121,3 @@ def ensure_coverage_importable():
       sys.exit(1)
 
 ensure_coverage_importable()
-
-from common import find_depot_tools  # pylint: disable=W0611

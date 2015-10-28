@@ -7,8 +7,6 @@
 from recipe_engine.types import freeze
 
 DEPS = [
-    'bot_update',
-    'gclient',
     'path',
     'properties',
     'python',
@@ -20,9 +18,6 @@ MASTER_USER = 'user'
 MASTER_IP = '172.27.213.40'
 
 def RunSteps(api):
-  api.gclient.set_config('chromium')
-  # api.bot_update.ensure_checkout(force=True)
-
   buildername = api.properties['buildername']
   image_file_path = api.properties['image']
   image_filename = image_file_path[(image_file_path.rfind('/') + 1):]

@@ -220,43 +220,6 @@ def GetRoot():
   return '/'
 
 
-def SpawnSubdirBuildbotsIfNeeded():
-  """Creates /c directory structure and spawns other bots on host as needed."""
-  # 'make start' spawns subdirs bots only when run in /b.
-  # TODO(ilevy): Remove this restriction after run_slave.py refactor.
-  if chromium_utils.GetActiveSubdir():
-    return
-  print 'Spawning other slaves on this host as needed.'
-  print 'Run make stopall to terminate.'
-  for slave in chromium_utils.GetSlavesForHost():
-    subdir = slave.get('subdir')
-    if not subdir:
-      continue
-    botdir = os.path.join(GetRoot(), 'c', subdir)
-
-    def GClientCall(command):
-      # We just synced depot_tools, so disable gclient auto-sync.
-      # pylint: disable=cell-var-from-loop
-      env = dict(os.environ, DEPOT_TOOLS_UPDATE='0')
-      subprocess.check_call([GetGClientPath()] + command, env=env, cwd=botdir)
-
-    gclient_solutions = chromium_utils.ParsePythonCfg(
-        os.path.join(ROOT_DIR, '.gclient')).get('solutions', [])
-    assert len(gclient_solutions) == 1
-    if subdir and not os.path.exists(botdir):
-      print 'Creating %s' % botdir
-      os.mkdir(botdir)
-      GClientCall(['config', gclient_solutions[0]['url']])
-      GClientCall(['sync'])
-      shutil.copyfile(
-          os.path.join(BUILD_DIR, 'site_config', '.bot_password'),
-          os.path.join(botdir, 'build', 'site_config', '.bot_password'))
-    bot_slavedir = os.path.join(botdir, 'build', 'slave')
-    if not os.path.exists(os.path.join(bot_slavedir, 'twistd.pid')):
-      print 'Spawning slave in %s' % bot_slavedir
-      subprocess.check_call(['make', 'start'], cwd=bot_slavedir)
-
-
 def GetThirdPartyVersions(master):
   """Checks whether the master to which this slave belongs specifies particular
   versions of buildbot and twisted for its slaves to run.  If not specified,
@@ -290,17 +253,14 @@ def main():
   # Use adhoc argument parsing because of twisted's twisted argument parsing.
   # Change the current directory to the directory of the script.
   os.chdir(SCRIPT_DIR)
+  # Windows bots need depot_tools in the ROOT_DIR
   depot_tools = os.path.join(ROOT_DIR, 'depot_tools')
-  if not os.path.isdir(depot_tools):
+  if sys.platform.startswith('win') and not os.path.isdir(depot_tools):
     error('You must put a copy of depot_tools in %s' % depot_tools)
   bot_password_file = os.path.normpath(
       os.path.join(BUILD_DIR, 'site_config', '.bot_password'))
   if not os.path.isfile(bot_password_file):
     error('You forgot to put the password at %s' % bot_password_file)
-
-  if (os.path.exists(os.path.join(GetRoot(), 'b')) and
-      os.path.exists(os.path.join(GetRoot(), 'c'))):
-    SpawnSubdirBuildbotsIfNeeded()
 
   # Make sure the current python path is absolute.
   old_pythonpath = os.environ.get('PYTHONPATH', '')
@@ -449,7 +409,6 @@ def main():
     remove_all_vars_except(os.environ, env_var)
     slave_path = [
         os.path.join(os.path.expanduser('~'), 'slavebin'),
-        depot_tools,
     ]
     # Git on mac is installed from git-scm.com/download/mac
     if sys.platform == 'darwin' and os.path.isdir('/usr/local/git/bin'):
@@ -507,27 +466,6 @@ def main():
           'slave manually to resume automatic reboots.' % prevent_reboot_file)
 
 
-def GetGClientPath():
-  """Returns path to local gclient executable."""
-  gclient_path = os.path.join(ROOT_DIR, 'depot_tools', 'gclient')
-  if sys.platform.startswith('win'):
-    return gclient_path + '.bat'
-
-  if not os.path.isfile(gclient_path):
-    raise RuntimeError('gclient not found. Check that depot_tools is '
-                       'properly installed')
-  return gclient_path
-
-
 if '__main__' == __name__:
-  # skip_sync_arg = '--no-gclient-sync'
-  # if skip_sync_arg not in sys.argv:
-  #   UseBotoPath()
-  #   if subprocess.call([GetGClientPath(), 'sync', '--force']) != 0:
-  #     print >> sys.stderr, (
-  #         '(%s) `gclient sync` failed; proceeding anyway...' % sys.argv[0])
-  #   os.execv(sys.executable, [sys.executable] + sys.argv + [skip_sync_arg])
-
-  # # Remove skip_sync_arg from arg list.  Needed because twistd.
-  # sys.argv.remove(skip_sync_arg)
+  print 'TODO(navabi): Add repo sync to run_slave.py...'
   main()

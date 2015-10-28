@@ -40,5 +40,12 @@ def Extend(pythonpath, cwd):
       ('uritemplate',),
       ('google_api_python_client',),
       ('site-packages',),
+      ('boto'),
+      ('gcs_oauth2_boto_plugin'),
+      ('pyasn1'),
+      ('pyasn1_modules'),
+      ('retry_decorator'),
+      ('rsa'),
+      ('socks'),
   )]
   return pythonpath.Append(*build_path)

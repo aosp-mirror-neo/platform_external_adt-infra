@@ -11,8 +11,6 @@
 TOPLEVEL_DIR ?= ../..
 SCRIPTS_DIR ?= $(TOPLEVEL_DIR)/scripts
 
-GCLIENT = $(shell which gclient || echo "$(TOPLEVEL_DIR)/../depot_tools/gclient")
-
 BUILDBOT8_PATH = $(shell $(SCRIPTS_DIR)/common/env.py -M "$(PWD)" echo)
 BUILDBOT_PATH ?= $(BUILDBOT8_PATH)
 

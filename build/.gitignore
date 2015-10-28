@@ -1,1 +1,2 @@
 *.pyc
+./scripts/slave/.recipe_deps
