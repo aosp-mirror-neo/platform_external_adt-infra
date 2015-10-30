@@ -52,6 +52,26 @@
        "scheduler": "emu_gspoller_windows",
        "slave_pools": ["win-10-64-nvidia-quadro-600"],
      },
+     "Mac 10.10.5 Intel HD 5000": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_mac",
+       "slave_pools": ["mac-10-10-5-intel-hd-5000"],
+     },
+     "Mac 10.10.5 Iris Pro": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_mac",
+       "slave_pools": ["mac-10-10-5-iris-pro"],
+     },
+     "Mac 10.8.5 Intel HD 5000": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_mac",
+       "slave_pools": ["mac-10-8-5-intel-hd-5000"],
+     },
+     "Mac 10.11.1 Iris Pro": {
+       "recipe": "adt/adt",
+       "scheduler": "emu_gspoller_mac",
+       "slave_pools": ["mac-10-11-1-iris-pro"],
+     },
   },
 
   "schedulers": {
@@ -62,13 +82,13 @@
       "identifier": "linux-tools",
       "type": "gs_poller",
     },
-#    "emu_gspoller_mac": {
-#      "gs_bucket": "android-build-emu",
-#      "gs_path": "builds/aosp-emu-master-dev-mac-sdk_tools_mac/",
-#      "periodicBuildTimer": 30,
-#      "identifier": "darwin-tools",
-#      "type": "gs_poller",
-#    },
+    "emu_gspoller_mac": {
+      "gs_bucket": "android-build-emu",
+      "gs_path": "builds/aosp-emu-master-dev-mac-sdk_tools_mac/",
+      "periodicBuildTimer": 30,
+      "identifier": "darwin-tools",
+      "type": "gs_poller",
+    },
     "emu_gspoller_windows": {
       "gs_bucket": "android-build-emu",
       "gs_path": "builds/aosp-emu-master-dev-linux-sdk_tools_linux/",
@@ -158,6 +178,38 @@
         "version": "win10",
       },
       "slaves": ['chromeos1-row3-rack3-host4'],
+    },
+    "mac-10-10-5-intel-hd-5000": {
+      "slave_data": {
+        "bits": 64,
+        "os": "mac",
+        "version": "yosemite",
+      },
+      "slaves": ['chromeos1-row4-rack3-host2'],
+    },
+    "mac-10-8-5-intel-hd-5000": {
+      "slave_data": {
+        "bits": 64,
+        "os": "mac",
+        "version": "mountainlion",
+      },
+      "slaves": ['chromeos1-row4-rack3-host4'],
+    },
+    "mac-10-10-5-iris-pro": {
+      "slave_data": {
+        "bits": 64,
+        "os": "mac",
+        "version": "yosemite",
+      },
+      "slaves": ['chromeos1-row4-rack3-host3'],
+    },
+    "mac-10-11-1-iris-pro": {
+      "slave_data": {
+        "bits": 64,
+        "os": "mac",
+        "version": "elcapitan",
+      },
+      "slaves": ['chromeos1-row4-rack4-host3'],
     },
   },
 }
