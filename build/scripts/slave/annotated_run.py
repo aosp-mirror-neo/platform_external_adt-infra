@@ -181,8 +181,12 @@ def update_scripts():
   stream = annotator.StructuredAnnotationStream()
 
   with stream.step('update_scripts') as s:
-    s.step_text('Bots do not update scripts. Manually update.')
-    s.step_warnings()
+    fetch_cmd = ['git', 'fetch', '--all']
+    reset_cmd = ['git', 'reset', '--hard', 'origin/master']
+    if subprocess.call(fetch_cmd) != 0 or subprocess.call(reset_cmd) != 0:
+      s.step_text('git update srouce failed!')
+      s.step_warnings()
+    s.step_text('git pull')
 
     os.environ['RUN_SLAVE_UPDATED_SCRIPTS'] = '1'
 
