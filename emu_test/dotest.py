@@ -15,46 +15,82 @@ import os
 import unittest
 import logging
 import re
+import time
+import psutil
+from subprocess import PIPE
 
 from utils import emu_argparser
 from utils import emu_unittest
 
 # Provides a regular expression for matching fail message
 TIMEOUT_REGEX = re.compile(r"(^\d+)([smhd])?$")
-#AssertionError: 37.59494113922119 not less than or equal to 30
+
+main_logger = logging.getLogger()
 def printResult(emuResult):
     print
-    print "Test Summary"
-    print ("Run %d tests (%d fail, %d pass)" % 
-           (emuResult.testsRun, len(emuResult.failures)+len(emuResult.errors), len(emuResult.passes)))
+    main_logger.info("Test Summary")
+    main_logger.info("Run %d tests (%d fail, %d pass)",
+           emuResult.testsRun, len(emuResult.failures)+len(emuResult.errors), len(emuResult.passes))
     if len(emuResult.errors) > 0 or len(emuResult.failures) > 0:
         for x in emuResult.errors:
             if x[1].splitlines()[-1] == "TimeoutError":
-                print "TIMEOUT: ", x[0].id()
-            else: 
-                print "FAIL: ", x[0].id()
+                main_logger.info("TIMEOUT: %s", x[0].id())
+            else:
+                main_logger.info("FAIL: %s", x[0].id())
         for x in emuResult.failures:
-            print "FAIL: ", x[0].id()
+            main_logger.info("FAIL: %s", x[0].id())
     if len(emuResult.passes) > 0:
-        print '------------------------------------------------------'
+        main_logger.info('------------------------------------------------------')
     for x in emuResult.passes:
-        print "PASS: ", x.id()
+        main_logger.info("PASS: %s", x.id())
     print
-    print "Test successful - ", emuResult.wasSuccessful()
+    main_logger.info("Test successful - %s", emuResult.wasSuccessful())
+
+def setupLogger():
+    """Create main_logger that will be used by test driver"""
+    global main_logger
+    log_formatter = logging.Formatter('%(message)s')
+    file_name = 'main_%s.log' % time.strftime("%Y%m%d-%H%M%S")
+    if emu_argparser.emu_args.session_dir is None:
+        emu_argparser.emu_args.session_dir = time.strftime("%Y%m%d-%H%M%S")
+    if not os.path.exists(emu_argparser.emu_args.session_dir):
+        os.makedirs(emu_argparser.emu_args.session_dir)
+
+    file_handler = logging.FileHandler(os.path.join(emu_argparser.emu_args.session_dir, file_name))
+    file_handler.setFormatter(log_formatter)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
+
+    main_logger.addHandler(file_handler)
+    main_logger.addHandler(console_handler)
+    main_logger.setLevel(getattr(logging, emu_argparser.emu_args.loglevel.upper()))
+
+def findSystemAVDs():
+    """Find available AVDs in system"""
+    # avd is searched in the order of $ANDROID_AVD_HOME,$ANDROID_SDK_HOME/.android/avd and $HOME/.android/avd
+    android_exec = "android.bat" if os.name == "nt" else "android"
+    avd_list_proc = psutil.Popen([android_exec, "list", "avd", "-c"], stdout=PIPE, stderr=PIPE)
+    (output, err) = avd_list_proc.communicate()
+    logging.getLogger().debug(output)
+    logging.getLogger().debug(err)
+    avd_list = [x.strip() for x in output.splitlines()]
+    main_logger.info("Run test for %d AVDs - %s", len(avd_list), avd_list)
+    return avd_list
 
 # Run the test case
 if __name__ == '__main__':
 
     os.environ["SHELL"] = "/bin/bash"
+
     emu_argparser.emu_args = emu_argparser.get_parser().parse_args()
-    logging.basicConfig(level=getattr(logging, emu_argparser.emu_args.loglevel.upper()), format='%(asctime)s - %(levelname)s - %(message)s')
+    setupLogger()
+    main_logger.info(emu_argparser.emu_args)
 
-    print emu_argparser.emu_args
+    if emu_argparser.emu_args.avd_list is None:
+        emu_argparser.emu_args.avd_list = findSystemAVDs()
 
-    from boot_test.boot_test import BootTestCase
-
-    emuSuite = unittest.TestLoader().loadTestsFromTestCase(BootTestCase)
-    emuRunner = emu_unittest.EmuTextTestRunner()
+    emuSuite = unittest.TestLoader().discover(start_dir='.', pattern=emu_argparser.emu_args.pattern)
+    emuRunner = emu_unittest.EmuTextTestRunner(stream=sys.stdout)
     emuResult = emuRunner.run(emuSuite)
     printResult(emuResult)
 
