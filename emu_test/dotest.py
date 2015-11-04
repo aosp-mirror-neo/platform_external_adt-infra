@@ -74,7 +74,7 @@ def findSystemAVDs():
     logging.getLogger().debug(output)
     logging.getLogger().debug(err)
     avd_list = [x.strip() for x in output.splitlines()]
-    main_logger.info("Run test for %d AVDs - %s", len(avd_list), avd_list)
+    main_logger.info("Found %d AVDs - %s", len(avd_list), avd_list)
     return avd_list
 
 # Run the test case
@@ -89,7 +89,8 @@ if __name__ == '__main__':
     if emu_argparser.emu_args.avd_list is None:
         emu_argparser.emu_args.avd_list = findSystemAVDs()
 
-    emuSuite = unittest.TestLoader().discover(start_dir='.', pattern=emu_argparser.emu_args.pattern)
+    test_root_dir=os.path.dirname(os.path.realpath(__file__))
+    emuSuite = unittest.TestLoader().discover(start_dir=test_root_dir, pattern=emu_argparser.emu_args.pattern)
     emuRunner = emu_unittest.EmuTextTestRunner(stream=sys.stdout)
     emuResult = emuRunner.run(emuSuite)
     printResult(emuResult)

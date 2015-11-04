@@ -8,6 +8,7 @@ import unittest
 import logging
 import time
 import psutil
+from emu_error import *
 from emu_argparser import emu_args
 from subprocess import PIPE
 
@@ -23,8 +24,6 @@ class LoggedTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print
-        print "=================== Start of", cls.__name__, "==================="
         log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         simple_formatter = logging.Formatter('%(message)s')
 
@@ -51,7 +50,6 @@ class LoggedTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        print "=================== End of", cls.__name__, "==================="
         # clear up log handlers
         cls.m_logger.handlers = []
 
@@ -91,7 +89,7 @@ class EmuBaseTestCase(LoggedTestCase):
         start_proc = psutil.Popen([exec_path, "-avd", avd], stdout=PIPE, stderr=PIPE)
         time.sleep(5)
         if start_proc.poll() is not None and start_proc.poll() is not 0:
-            m_logger.error(start_proc.communicate()[1])
+            self.m_logger.error(start_proc.communicate()[1])
             raise LaunchError(avd)
 
     def launch_emu_and_wait(self, avd):
