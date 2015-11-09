@@ -62,8 +62,9 @@ def RunSteps(api):
   # Find emulator script based on current location
   # Current directory should be [project root]/build/scripts/slave/recipes/[recipeName]/
   # Emulator scripts are located [project root]/emu_test
-  recipe_dir = os.path.dirname(os.path.realpath(__file__))
-  dotest_path = os.path.join(recipe_dir, '..', '..', '..', '..', '..', 'emu_test', 'dotest.py')
+  build_dir = api.path['build']
+  script_root = api.path.join(build_dir, os.pardir, 'emu_test')
+  dotest_path = api.path.join(script_root, 'dotest.py')
 
   api.step('Clean slave build directory',
            ['rm', '-rf', download_path.join('tools')],
@@ -75,13 +76,15 @@ def RunSteps(api):
   api.step('Unzip Image File',
            ['unzip', local_zipfile],
            env=env)
-  api.python('Run Emulator Boot Test', dotest_path,
-             ['-l', 'DEBUG', '-exec', emulator_path, '-p', 'test_boot.*'],
-             env=env)
-  api.python('Run Emulator CTS Test', dotest_path,
-             ['-l', 'DEBUG', '-exec', emulator_path, '-p', 'test_cts.*'],
-             env=env)
-
+  with api.step.defer_results():
+    api.python('Run Emulator Boot Test', dotest_path,
+               ['-l', 'INFO', '-exec', emulator_path, '-p', 'test_boot.*',
+                '-c', api.path.join(script_root, 'config', 'boot_cfg.csv'), '-n', buildername],
+                env=env)
+    api.python('Run Emulator CTS Test', dotest_path,
+               ['-l', 'INFO', '-exec', emulator_path, '-p', 'test_cts.*',
+                '-c', api.path.join(script_root, 'config', 'cts_cfg.csv'), '-n', buildername],
+                env=env)
 def GenTests(api):
   yield (
     api.test('basic') +

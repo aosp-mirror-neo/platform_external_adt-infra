@@ -26,5 +26,11 @@ def get_parser():
     parser.add_argument('-p', type=str, dest='pattern', action='store',
                         default='test*.py',
                         help='regex file name pattern for inclusion in the test suite')
+    parser.add_argument('-c', type=str, dest='config_file', action='store',
+                        default=None,
+                        help='path to test configuration file')
+    parser.add_argument('-n', type=str, dest='builder_name', action='store',
+                        default=None,
+                        help='builder name as appeared in config_file')
     parser.add_argument('unittest_args', nargs='*')
     return parser

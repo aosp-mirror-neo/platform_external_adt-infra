@@ -1,0 +1,54 @@
+Device Config,,,,,,Linux,,,,Windows,,,,,MacOSX,,,
+API*,Tag*,ABI*,Device,RAM,GPU,Ubuntu 12.04 HD Graphics 4000,Ubuntu 14.04 HD 4400,Ubuntu 14.04 Quadro 600,Ubuntu 15.04 Quadro K600,Win 7 32-bit HD 4400,Win 7 64-bit HD 4400,Win 8 64-bit Quadro 600,Win 8.1 64-bit Quadro 600,Win 10 64-bit Quadro 600,Mac 10.10.5 Intel HD 5000,Mac 10.10.5 Iris Pro,Mac 10.8.5 Intel HD 5000,Mac 10.11.1 Iris Pro
+API 23,android-tv,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,default,arm64-v8a,Nexus 6,3072,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,,Nexus 5,3072,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,,Nexus 4,2048,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,mips,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,mips64,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,Nexus 6,2048,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86_64,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,google_apis,armeabi-v7a,Galaxy Nexus,2048,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86_64,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 22,android-tv,armeabi-v7a,Android TV (1080p),2048,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,Android TV (1080p),2048,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,android-wear,armeabi-v7a,wear_square_320,1024,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,default,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86_64,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,google_apis,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86_64,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 21,android-tv,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,android-wear,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,default,armeabi-v7a,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,armeabi-v7a,Nexus One,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86_64,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,google_apis,armeabi-v7a,Nexus S,1024,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86_64,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 20,android-wear,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 19,default,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,google_apis,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 18,default,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 17,default,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,mips,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 16,default,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,mips,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 15,default,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,mips,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
+API 10,default,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S

@@ -3,11 +3,12 @@
 import unittest
 import time
 import psutil
+import csv
 from subprocess import Popen, PIPE
 
 from utils.emu_error import *
 from utils.emu_argparser import emu_args
-from utils.emu_testcase import EmuBaseTestCase
+from utils.emu_testcase import EmuBaseTestCase, AVDConfig
 
 class BootTestCase(EmuBaseTestCase):
     def __init__(self, *args, **kwargs):
@@ -37,6 +38,39 @@ class BootTestCase(EmuBaseTestCase):
         self.m_logger.info('AVD %s, boot time: %s, expected time: %s', avd, boot_time, emu_args.expected_boot_time)
         self.assertLessEqual(boot_time, emu_args.expected_boot_time)
 
+    def run_boot_test(self, avd_config):
+        self.assertEqual(self.create_avd(avd_config), 0)
+        self.boot_check(str(avd_config))
+
+def create_test_case_from_file():
+
+    def create_test_case(avd_config):
+        return lambda self: self.run_boot_test(avd_config)
+
+    with open(emu_args.config_file, "rb") as file:
+        reader = csv.reader(file)
+        for row in reader:
+            #skip the first line
+            if reader.line_num == 1:
+                continue
+            if reader.line_num == 2:
+                builder_idx = row.index(emu_args.builder_name)
+            else:
+                if(row[0].strip() != ""):
+                    api = row[0].split("API", 1)[1].strip()
+                if(row[1].strip() != ""):
+                    tag = row[1].strip()
+                if(row[2].strip() != ""):
+                    abi = row[2].strip()
+
+                # P - config should be passing
+                # X - config is expected to fail
+                # S and everything else - Skip this config
+                op = row[builder_idx].strip().upper()
+                if op in ["P", "X", "F"]:
+                    avd_config = AVDConfig(api, tag, abi, row[3], row[4], row[5])
+                    setattr(BootTestCase, "test_boot_%s" % str(avd_config), create_test_case(avd_config))
+
 def create_test_case_for_avds():
     avd_list = emu_args.avd_list
     for avd in avd_list:
@@ -44,7 +78,10 @@ def create_test_case_for_avds():
             return lambda self: self.boot_check(i)
         setattr(BootTestCase, "test_boot_%s" % avd, fn(avd))
 
-create_test_case_for_avds()
+if emu_args.config_file is None:
+    create_test_case_for_avds()
+else:
+    create_test_case_from_file()
 
 if __name__ == '__main__':
     os.environ["SHELL"] = "/bin/bash"
