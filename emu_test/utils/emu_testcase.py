@@ -223,7 +223,7 @@ class EmuBaseTestCase(LoggedTestCase):
             if "google" in avd_config.tag:
                 self.update_sdk("addon-google_apis-google-%s" % avd_config.api)
                 self.update_sdk("sys-img-%s-addon-google_apis-google-%s"
-                                % (avd_config.api, avd_config.abi, avd_config.api))
+                                % (avd_config.abi, avd_config.api))
             else:
                 self.update_sdk("sys-img-%s-android-%s" % (avd_config.abi, avd_config.api))
             self.m_logger.debug("try create avd again after update sdk")
