@@ -138,7 +138,6 @@ class EmuBaseTestCase(LoggedTestCase):
         config.optionxform = str
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                  '..', 'config', 'avd_template.ini')
-        self.m_logger.info("Update device settings at %s", file_path)
         config.read(file_path)
         def set_val(key, val):
             if val != "":
@@ -176,6 +175,7 @@ class EmuBaseTestCase(LoggedTestCase):
         # avd should be found $HOME/.android/avd/
         dst_path = os.path.join(os.path.expanduser('~'), '.android', 'avd',
                                 '%s.avd' % avd_config.name(), 'config.ini')
+        self.m_logger.info("Update device settings at %s", dst_path)
         for section in config.sections():
             if section != 'Common':
                 config.remove_section(section)
@@ -212,6 +212,8 @@ class EmuBaseTestCase(LoggedTestCase):
             output, err = avd_proc.communicate(input='\n')
             self.simple_logger.debug(output)
             self.simple_logger.debug(err)
+            if 'Error' in err:
+                return -1
             return avd_proc.poll()
 
         ret = try_create()

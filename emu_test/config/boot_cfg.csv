@@ -27,11 +27,11 @@ API 21,android-tv,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
 ,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
 ,android-wear,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
 ,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
-,default,armeabi-v7a,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,,armeabi-v7a,Nexus One,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,,x86,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,,x86_64,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,google_apis,armeabi-v7a,Nexus S,1024,yes,S,P,S,S,S,S,S,S,S,S,S,S,S
+,default,armeabi-v7a,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,armeabi-v7a,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86_64,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+,google_apis,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
 ,,x86,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
 ,,x86_64,,,,S,P,S,S,S,S,S,S,S,S,S,S,S
 API 20,android-wear,armeabi-v7a,,,,S,P,S,S,S,S,S,S,S,S,S,S,S

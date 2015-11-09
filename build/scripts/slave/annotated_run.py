@@ -179,10 +179,10 @@ def update_scripts():
     return False
 
   stream = annotator.StructuredAnnotationStream()
-
+  git_cmd = 'git.bat' if os.name == "nt" else 'git'
   with stream.step('update_scripts') as s:
-    fetch_cmd = ['git', 'fetch', '--all']
-    reset_cmd = ['git', 'reset', '--hard', 'origin/master']
+    fetch_cmd = [git_cmd, 'fetch', '--all']
+    reset_cmd = [git_cmd, 'reset', '--hard', 'origin/master']
     if subprocess.call(fetch_cmd) != 0 or subprocess.call(reset_cmd) != 0:
       s.step_text('git update srouce failed!')
       s.step_warnings()
