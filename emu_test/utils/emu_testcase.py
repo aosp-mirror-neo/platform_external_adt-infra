@@ -17,9 +17,14 @@ from ConfigParser import ConfigParser
 class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu')):
     __slots__ = ()
     def __str__(self):
+        device = self.device if self.device != '' else 'defdev'
+        for ch in [' ', '(', ')']:
+            device = device.replace(ch, '_')
+        ram = self.ram if self.ram != '' else '512'
+        gpu = self.gpu if self.gpu != '' else 'no'
         return str("%s-%s-%s-%s-gpu_%s-api%s" % (self.tag, self.abi,
-                                                 self.device.replace(' ', '_'),
-                                                 self.ram, self.gpu, self.api))
+                                                 device, ram, gpu,
+                                                 self.api))
     def name(self):
         return str(self)
 class LoggedTestCase(unittest.TestCase):
