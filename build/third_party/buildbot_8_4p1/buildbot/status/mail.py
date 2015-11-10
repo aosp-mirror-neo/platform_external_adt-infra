@@ -21,6 +21,7 @@ from email.Utils import formatdate
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 from StringIO import StringIO
+import smtplib
 import urllib
 
 from zope.interface import implements
@@ -675,5 +676,8 @@ class MailNotifier(base.StatusReceiverMultiService):
     def sendMessage(self, m, recipients):
         s = m.as_string()
         twlog.msg("sending mail (%d bytes) to" % len(s), recipients)
-        return self.sendmail(s, recipients)
-
+        server = smtplib.SMTP('localhost')
+        server.set_debuglevel(1)
+        server.sendmail(self.fromaddr, recipients, s)
+        server.quit()
+        return 0
