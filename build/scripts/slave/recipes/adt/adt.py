@@ -92,6 +92,8 @@ def RunSteps(api):
                if line.startswith('FAIL:') or line.startswith('TIMEOUT:')]
       for line in lines:
         api.step.active_result.presentation.logs[line] = ''
+    else:
+      print deferred_step_result.get_result().stderr
 
     deferred_step_result = api.python('Run Emulator CTS Test', dotest_path,
                                       ['-l', 'INFO', '-exec', emulator_path,
@@ -107,6 +109,8 @@ def RunSteps(api):
                if line.startswith('FAIL:') or line.startswith('TIMEOUT:')]
       for line in lines:
         api.step.active_result.presentation.logs[line] = ''
+    else:
+      print deferred_step_result.get_result().stderr
 
 
 def GenTests(api):
