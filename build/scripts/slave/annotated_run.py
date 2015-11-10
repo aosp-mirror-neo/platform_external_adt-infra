@@ -184,7 +184,7 @@ def update_scripts():
     fetch_cmd = [git_cmd, 'fetch', '--all']
     reset_cmd = [git_cmd, 'reset', '--hard', 'origin/master']
     if subprocess.call(fetch_cmd) != 0 or subprocess.call(reset_cmd) != 0:
-      s.step_text('git update srouce failed!')
+      s.step_text('git update source failed!')
       s.step_warnings()
     s.step_text('git pull')
 

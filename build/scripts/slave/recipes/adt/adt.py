@@ -12,8 +12,8 @@ DEPS = [
     'path',
     'properties',
     'python',
+    'raw_io',
     'step',
-    'zip',
 ]
 
 MASTER_USER = 'user'
@@ -77,14 +77,38 @@ def RunSteps(api):
            ['unzip', local_zipfile],
            env=env)
   with api.step.defer_results():
-    api.python('Run Emulator Boot Test', dotest_path,
-               ['-l', 'INFO', '-exec', emulator_path, '-p', 'test_boot.*',
-                '-c', api.path.join(script_root, 'config', 'boot_cfg.csv'), '-n', buildername],
-                env=env)
-    api.python('Run Emulator CTS Test', dotest_path,
-               ['-l', 'INFO', '-exec', emulator_path, '-p', 'test_cts.*',
-                '-c', api.path.join(script_root, 'config', 'cts_cfg.csv'), '-n', buildername],
-                env=env)
+    deferred_step_result = api.python('Run Emulator Boot Test', dotest_path,
+                                      ['-l', 'INFO', '-exec', emulator_path,
+                                       '-p', 'test_boot.*', '-c',
+                                       api.path.join(script_root, 'config',
+                                                     'boot_cfg.csv'), '-n',
+                                       buildername],
+                                      env=env, stderr=api.raw_io.output('err'))
+    if not deferred_step_result.is_ok:
+      stderr_output = deferred_step_result.get_error().result.stderr
+      print stderr_output
+      lines = ['%s: %s' % (line[0:line.index(':')], line[line.rfind('.')+1:])
+               for line in stderr_output.split('\n')
+               if line.startswith('FAIL:') or line.startswith('TIMEOUT:')]
+      for line in lines:
+        api.step.active_result.presentation.logs[line] = ''
+
+    deferred_step_result = api.python('Run Emulator CTS Test', dotest_path,
+                                      ['-l', 'INFO', '-exec', emulator_path,
+                                       '-p', 'test_cts.*', '-c',
+                                       api.path.join(script_root, 'config',
+                                                     'cts_cfg.csv'),
+                                       '-n', buildername],
+                                      env=env, stderr=api.raw_io.output('err'))
+    if not deferred_step_result.is_ok:
+      stderr_output = deferred_step_result.get_error().result.stderr
+      print stderr_output
+      lines = [line for line in stderr_output.split('\n')
+               if line.startswith('FAIL:') or line.startswith('TIMEOUT:')]
+      for line in lines:
+        api.step.active_result.presentation.logs[line] = ''
+
+
 def GenTests(api):
   yield (
     api.test('basic') +
