@@ -17,6 +17,6 @@ class ClientAdt(Master.Master3):
   master_port = 8200
   slave_port = 8300
   master_port_alt = 8400
-  buildbot_url = 'https://build.chromium.org/p/client.adt/'
+  buildbot_url = 'http://chromeos1-row3-rack2-host1.cros.corp.google.com:8200/'
   buildbucket_bucket = None
   service_account_file = None

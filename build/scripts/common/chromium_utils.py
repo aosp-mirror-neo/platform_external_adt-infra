@@ -1852,7 +1852,7 @@ def ParseBuildersFileContents(path, contents):
   builders['master_dirname'] = master_dirname
   builders.setdefault('master_classname', master_classname)
   builders.setdefault('buildbot_url',
-                      'https://build.chromium.org/p/%s/' % buildbot_path)
+                 'http://chromeos1-row3-rack2-host1.cros.corp.google.com:8200/')
 
   builders.setdefault('buildbucket_bucket', None)
   builders.setdefault('service_account_file', None)
