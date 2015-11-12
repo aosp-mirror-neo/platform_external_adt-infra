@@ -58,7 +58,8 @@ def setupLogger():
 
     file_handler = logging.FileHandler(os.path.join(emu_argparser.emu_args.session_dir, file_name))
     file_handler.setFormatter(log_formatter)
-    console_handler = logging.StreamHandler()
+    # Test summary goes to standard error, since we rely on stderr to parse test results in buildbot
+    console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setFormatter(log_formatter)
 
     main_logger.addHandler(file_handler)

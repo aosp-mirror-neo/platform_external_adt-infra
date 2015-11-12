@@ -4,6 +4,7 @@
 """
 
 import os
+import sys
 import unittest
 import logging
 import time
@@ -52,7 +53,8 @@ class LoggedTestCase(unittest.TestCase):
 
         file_handler = logging.FileHandler(os.path.join(emu_args.session_dir, file_name))
         file_handler.setFormatter(formatter)
-        console_handler = logging.StreamHandler()
+        # Redirect message to standard out, these messages indicate test progress, they don't belong to stderr
+        console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
 
         logger = logging.getLogger(logger_name)
