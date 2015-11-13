@@ -22,7 +22,7 @@ class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu')):
         for ch in [' ', '(', ')']:
             device = device.replace(ch, '_')
         ram = self.ram if self.ram != '' else '512'
-        gpu = self.gpu if self.gpu != '' else 'no'
+        gpu = self.gpu if self.gpu != '' else 'yes'
         return str("%s-%s-%s-%s-gpu_%s-api%s" % (self.tag, self.abi,
                                                  device, ram, gpu,
                                                  self.api))
@@ -92,8 +92,9 @@ class EmuBaseTestCase(LoggedTestCase):
             for proc in psutil.process_iter():
                 if "emulator" in proc.name() or "qemu-system" in proc.name():
                     self.m_logger.debug("Found - %s, pid - %d, status - %s", proc.name(), proc.pid, proc.status())
-                    time.sleep(1)
-                    term = False
+                    if proc.status() != psutil.STATUS_ZOMBIE:
+                        time.sleep(1)
+                        term = False
             if term:
                 break
         return term
@@ -113,11 +114,11 @@ class EmuBaseTestCase(LoggedTestCase):
         start_time = time.time()
         self.launch_emu(avd)
         completed = "0"
-        for count in range(emu_args.timeout_in_seconds):
+        while time.time()-start_time < emu_args.timeout_in_seconds:
             process = psutil.Popen(["adb", "shell", "getprop", "sys.boot_completed"], stdout=PIPE, stderr=PIPE)
             (output, err) = process.communicate()
             exit_code = process.wait()
-            self.m_logger.debug('%d - AVD %s, %s %s', count, avd, output, err)
+            self.m_logger.debug('AVD %s, %s %s', avd, output, err)
             if exit_code is 0:
                 completed = output.strip()
             if completed is "1":
@@ -132,8 +133,13 @@ class EmuBaseTestCase(LoggedTestCase):
         return boot_time
 
     def update_config(self, avd_config):
+        # avd should be found $HOME/.android/avd/
+        dst_path = os.path.join(os.path.expanduser('~'), '.android', 'avd',
+                                '%s.avd' % avd_config.name(), 'config.ini')
         if avd_config.device == "":
             self.m_logger.info("No device information, use default settings!")
+            with open(dst_path, 'a') as fout:
+                fout.write('hw.gpu.enabled=yes')
             return
         class AVDIniConverter:
             output_file = None
@@ -179,9 +185,6 @@ class EmuBaseTestCase(LoggedTestCase):
         set_val('tag.display', tag_id_to_display[avd_config.tag])
         set_val('tag.id', avd_config.tag)
 
-        # avd should be found $HOME/.android/avd/
-        dst_path = os.path.join(os.path.expanduser('~'), '.android', 'avd',
-                                '%s.avd' % avd_config.name(), 'config.ini')
         self.m_logger.info("Update device settings at %s", dst_path)
         for section in config.sections():
             if section != 'Common':
@@ -202,7 +205,6 @@ class EmuBaseTestCase(LoggedTestCase):
            otherwise, return value of creation process.
         """
         avd_name = str(avd_config)
-        self.m_logger.info("Create AVD %s" % avd_name)
 
         def try_create():
             android_exec = "android.bat" if os.name == "nt" else "android"
@@ -211,11 +213,12 @@ class EmuBaseTestCase(LoggedTestCase):
                 avd_target = "Google Inc.:Google APIs:%s" % (avd_config.api)
             else:
                 avd_target = "android-%s" % (avd_config.api)
-
-            avd_proc = psutil.Popen([android_exec, "create", "avd", "--force",
-                                     "--name", avd_name, "--target", avd_target,
-                                     "--abi", avd_abi],
-                                     stdout=PIPE, stdin=PIPE, stderr=PIPE)
+            create_cmd = [android_exec, "create", "avd", "--force",
+                          "--name", avd_name, "--target", avd_target,
+                          "--abi", avd_abi]
+            self.m_logger.info("Create AVD, cmd: %s" % ' '.join(create_cmd))
+            avd_proc = psutil.Popen(create_cmd,
+                                    stdout=PIPE, stdin=PIPE, stderr=PIPE)
             output, err = avd_proc.communicate(input='\n')
             self.simple_logger.debug(output)
             self.simple_logger.debug(err)
@@ -231,6 +234,10 @@ class EmuBaseTestCase(LoggedTestCase):
                 self.update_sdk("addon-google_apis-google-%s" % avd_config.api)
                 self.update_sdk("sys-img-%s-addon-google_apis-google-%s"
                                 % (avd_config.abi, avd_config.api))
+            elif "wear" in avd_config.tag:
+                self.update_sdk("sys-img-%s-android-wear-%s" % (avd_config.abi, avd_config.api))
+            elif "tv" in avd_config.tag:
+                self.update_sdk("sys-img-%s-android-tv-%s" % (avd_config.abi, avd_config.api))
             else:
                 self.update_sdk("sys-img-%s-android-%s" % (avd_config.abi, avd_config.api))
             self.m_logger.debug("try create avd again after update sdk")

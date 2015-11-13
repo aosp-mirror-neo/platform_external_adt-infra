@@ -29,8 +29,9 @@ main_logger = logging.getLogger()
 def printResult(emuResult):
     print
     main_logger.info("Test Summary")
-    main_logger.info("Run %d tests (%d fail, %d pass)",
-           emuResult.testsRun, len(emuResult.failures)+len(emuResult.errors), len(emuResult.passes))
+    main_logger.info("Run %d tests (%d fail, %d pass, %d xfail, %d xpass)",
+           emuResult.testsRun, len(emuResult.failures)+len(emuResult.errors), len(emuResult.passes),
+           len(emuResult.expectedFailures), len(emuResult.unexpectedSuccesses))
     if len(emuResult.errors) > 0 or len(emuResult.failures) > 0:
         for x in emuResult.errors:
             if x[1].splitlines()[-1] == "TimeoutError":
@@ -39,11 +40,23 @@ def printResult(emuResult):
                 main_logger.info("FAIL: %s", x[0].id())
         for x in emuResult.failures:
             main_logger.info("FAIL: %s", x[0].id())
+
     if len(emuResult.passes) > 0:
         main_logger.info('------------------------------------------------------')
     for x in emuResult.passes:
         main_logger.info("PASS: %s", x.id())
-    print
+
+    if len(emuResult.expectedFailures) > 0:
+        main_logger.info('------------------------------------------------------')
+    for x in emuResult.expectedFailures:
+        main_logger.info("Expected Failure: %s", x[0].id())
+
+    if len(emuResult.unexpectedSuccesses) > 0:
+        main_logger.info('------------------------------------------------------')
+    for x in emuResult.unexpectedSuccesses:
+        main_logger.info("Unexpected Success: %s", x.id())
+
+    main_logger.info('')
     main_logger.info("Test successful - %s", emuResult.wasSuccessful())
 
 def setupLogger():

@@ -1,9 +1,11 @@
 """Test the emulator boot time"""
 
 import unittest
+import os
 import time
 import psutil
 import csv
+import shutil
 from subprocess import Popen, PIPE
 
 from utils.emu_error import *
@@ -13,6 +15,7 @@ from utils.emu_testcase import EmuBaseTestCase, AVDConfig
 class BootTestCase(EmuBaseTestCase):
     def __init__(self, *args, **kwargs):
         super(BootTestCase, self).__init__(*args, **kwargs)
+        self.avd_config = None
 
     @classmethod
     def setUpClass(cls):
@@ -32,6 +35,14 @@ class BootTestCase(EmuBaseTestCase):
                     proc.kill()
             result = self.term_check(timeout=10)
             self.m_logger.debug("term_check after psutil.kill - %s", result)
+        self.m_logger.info("Remove AVD inside of tear down")
+        # avd should be found $HOME/.android/avd/
+        avd_dir = os.path.join(os.path.expanduser('~'), '.android', 'avd')
+        try:
+            os.remove(os.path.join(avd_dir, '%s.ini' % self.avd_config.name()))
+            shutil.rmtree(os.path.join(avd_dir, '%s.avd' % self.avd_config.name()), ignore_errors=True)
+        except:
+            pass
 
     def boot_check(self, avd):
         boot_time = self.launch_emu_and_wait(avd)
@@ -39,6 +50,7 @@ class BootTestCase(EmuBaseTestCase):
         self.assertLessEqual(boot_time, emu_args.expected_boot_time)
 
     def run_boot_test(self, avd_config):
+        self.avd_config = avd_config
         self.assertEqual(self.create_avd(avd_config), 0)
         self.boot_check(str(avd_config))
 
@@ -69,7 +81,11 @@ def create_test_case_from_file():
                 op = row[builder_idx].strip().upper()
                 if op in ["P", "X", "F"]:
                     avd_config = AVDConfig(api, tag, abi, row[3], row[4], row[5])
-                    setattr(BootTestCase, "test_boot_%s" % str(avd_config), create_test_case(avd_config))
+                    if op == "X":
+                        setattr(BootTestCase, "test_boot_%s" % str(avd_config),
+                                unittest.expectedFailure(create_test_case(avd_config)))
+                    else:
+                        setattr(BootTestCase, "test_boot_%s" % str(avd_config), create_test_case(avd_config))
 
 def create_test_case_for_avds():
     avd_list = emu_args.avd_list
