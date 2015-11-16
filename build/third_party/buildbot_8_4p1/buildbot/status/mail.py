@@ -21,12 +21,10 @@ from email.Utils import formatdate
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 from StringIO import StringIO
-import smtplib
 import urllib
 
 from zope.interface import implements
 from twisted.internet import defer, reactor
-from twisted.mail.smtp import ESMTPSenderFactory
 from twisted.python import log as twlog
 
 have_ssl = True
@@ -162,7 +160,7 @@ class MailNotifier(base.StatusReceiverMultiService):
                  lookup=None, extraRecipients=[],
                  sendToInterestedUsers=True, customMesg=None,
                  messageFormatter=defaultMessage, extraHeaders=None,
-                 addPatch=True, useTls=False,
+                 addPatch=True, useTls=False, smtpServer=None,
                  smtpUser=None, smtpPassword=None, smtpPort=25):
         """
         @type  fromaddr: string
@@ -262,6 +260,10 @@ class MailNotifier(base.StatusReceiverMultiService):
                              'Subject', or 'CC' in here. Both the names and
                              values may be WithProperties instances.
 
+        @type smtpServer: smtplib
+        @param smtpServer: smtplib server to use to send notification emails.
+                           Should already be signed in to the account.
+
         @type useTls: boolean
         @param useTls: Send emails using TLS and authenticate with the
                        smtp host. Defaults to False.
@@ -307,6 +309,7 @@ class MailNotifier(base.StatusReceiverMultiService):
         self.extraHeaders = extraHeaders
         self.addPatch = addPatch
         self.useTls = useTls
+        self.smtpServer = smtpServer
         self.smtpUser = smtpUser
         self.smtpPassword = smtpPassword
         self.smtpPort = smtpPort
@@ -648,36 +651,12 @@ class MailNotifier(base.StatusReceiverMultiService):
 
         return self.sendMessage(m, list(to_recipients | cc_recipients))
 
-    def sendmail(self, s, recipients):
-        result = defer.Deferred()
-
-        if have_ssl and self.useTls:
-            client_factory = ssl.ClientContextFactory()
-            client_factory.method = SSLv3_METHOD
-        else:
-            client_factory = None
-
-        if self.smtpUser and self.smtpPassword:
-            useAuth = True
-        else:
-            useAuth = False
-
-        sender_factory = ESMTPSenderFactory(
-            self.smtpUser, self.smtpPassword,
-            self.fromaddr, recipients, StringIO(s),
-            result, contextFactory=client_factory,
-            requireTransportSecurity=self.useTls,
-            requireAuthentication=useAuth)
-
-        reactor.connectTCP(self.relayhost, self.smtpPort, sender_factory)
-
-        return result
-
     def sendMessage(self, m, recipients):
         s = m.as_string()
         twlog.msg("sending mail (%d bytes) to" % len(s), recipients)
-        server = smtplib.SMTP('localhost')
-        server.set_debuglevel(1)
-        server.sendmail(self.fromaddr, recipients, s)
-        server.quit()
+        try:
+          self.smtpServer.sendmail(self.fromaddr, recipients, s)
+          twlog.msg("successfully sent email")
+        except:
+          twlog.msg('error: failed to send email')
         return 0
