@@ -653,10 +653,10 @@ class MailNotifier(base.StatusReceiverMultiService):
 
     def sendMessage(self, m, recipients):
         s = m.as_string()
-        twlog.msg("sending mail (%d bytes) to" % len(s), recipients)
+        twlog.msg('sending mail (%d bytes) to' % len(s), recipients)
         try:
           self.smtpServer.sendmail(self.fromaddr, recipients, s)
-          twlog.msg("successfully sent email")
-        except:
-          twlog.msg('error: failed to send email')
+          twlog.msg('successfully sent email')
+        except Exception as ex:
+          twlog.msg('error: failed to send email: %s' % repr(ex))
         return 0

@@ -4,6 +4,7 @@ import os
 import smtplib
 
 from buildbot.status import mail
+from twisted.python import log as twlog
 
 BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,
                                          os.pardir)
@@ -36,9 +37,10 @@ def AddMailNotifier(BuildmasterConfig):
     pass_file = os.path.join(BUILD_DIR, 'site_config', '.mail_password')
     with open(pass_file) as f:
       gmailServer.login("adtinfrastructure", f.read())
+    twlog.msg('Mail server login for notifications successful.')
   except Exception:
     # For local masters (i.e. no .mail_password) do not send alert emails.
-    print 'No mail password file. Will not send mail alerts.'
+    twlog.msg('No mail password file. Will not send mail alerts.')
     gmailServer = None
   BuildmasterConfig['status'] = []
   BuildmasterConfig['status'].extend([

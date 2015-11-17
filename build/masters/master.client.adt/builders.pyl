@@ -85,7 +85,7 @@
     "emu_gspoller_mac": {
       "gs_bucket": "android-build-emu",
       "gs_path": "builds/aosp-emu-master-dev-mac-sdk_tools_mac/",
-      "periodicBuildTimer": 30,
+      "periodicBuildTimer": 300,
       "identifier": "darwin-tools",
       "type": "gs_poller",
     },
