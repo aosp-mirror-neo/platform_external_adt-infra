@@ -139,7 +139,7 @@ class EmuBaseTestCase(LoggedTestCase):
         if avd_config.device == "":
             self.m_logger.info("No device information, use default settings!")
             with open(dst_path, 'a') as fout:
-                fout.write('hw.gpu.enabled=yes')
+                fout.write('hw.gpu.enabled=%s' % avd_config.gpu)
             return
         class AVDIniConverter:
             output_file = None

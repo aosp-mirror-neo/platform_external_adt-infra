@@ -80,7 +80,16 @@ def create_test_case_from_file():
                 # S and everything else - Skip this config
                 op = row[builder_idx].strip().upper()
                 if op in ["P", "X", "F"]:
-                    avd_config = AVDConfig(api, tag, abi, row[3], row[4], row[5])
+                    device = row[3]
+                    if row[4] != "":
+                        ram = row[4]
+                    else:
+                        ram = "512" if device == "" else "1536"
+                    if row[5] != "":
+                        gpu = row[5]
+                    else:
+                        gpu = "yes" if api > "15" else "no"
+                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu)
                     if op == "X":
                         setattr(BootTestCase, "test_boot_%s" % str(avd_config),
                                 unittest.expectedFailure(create_test_case(avd_config)))

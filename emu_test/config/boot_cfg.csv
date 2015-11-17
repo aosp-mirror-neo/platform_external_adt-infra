@@ -5,7 +5,7 @@ API 23,android-tv,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,default,armeabi-v7a,Nexus 6,2048,yes,P,P,P,P,S,S,S,S,S,S,S,S,S
 ,,x86,Nexus 6,2048,yes,P,P,P,X,S,S,S,S,S,P,P,P,P
 ,,x86,Nexus 5,2048,yes,P,P,P,P,S,S,S,S,S,P,P,P,P
-,,x86_64,Nexus 5,2048,yes,P,P,P,P,,,,,,P,P,P,P
+,,x86_64,Nexus 5,2048,yes,P,P,P,P,S,S,S,S,S,X,X,X,X
 ,google_apis,armeabi-v7a,Galaxy Nexus,2048,yes,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 ,,x86_64,,,,,,P,,,,,,,,,,
@@ -25,8 +25,8 @@ API 21,android-tv,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 ,default,armeabi-v7a,,,,P,P,P,P,,,,,,P,P,P,P
 ,,armeabi-v7a,,,,P,P,P,P,,,,,,P,P,P,P
-,,x86,,,,P,P,P,P,,,,,,,,P,P
-,,x86_64,,,,P,P,P,P,,,,,,,,P,P
+,,x86,,,,P,P,P,P,,,,,,P,P,P,P
+,,x86_64,,,,P,P,P,P,,,,,,X,X,X,X
 ,google_apis,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 ,,x86_64,,,,,,P,,,,,,,,,,
@@ -41,10 +41,10 @@ API 18,default,armeabi-v7a,,,,,,P,,,,,,,,,,
 API 17,default,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,mips,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
-API 16,default,armeabi-v7a,Nexus 4,,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,,mips,Nexus 4,,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,,x86,Nexus 4,,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-API 15,default,armeabi-v7a,,,,,,P,,,,,,,,,,
-,,mips,,,,,,P,,,,,,,,,,
-,,x86,,,,,,P,,,,,,,,,,
-API 10,default,x86,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+API 16,default,armeabi-v7a,Nexus 4,1024,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,mips,Nexus 4,1024,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86,Nexus 4,1024,yes,P,P,P,P,P,P,P,P,P,X,X,X,X
+API 15,default,armeabi-v7a,,,no,,,P,,,,,,,,,,
+,,mips,,,no,,,P,,,,,,,,,,
+,,x86,,,no,,,P,,,,,,,,,,
+API 10,default,x86,,,no,P,P,P,P,P,P,P,P,P,P,P,P,P
