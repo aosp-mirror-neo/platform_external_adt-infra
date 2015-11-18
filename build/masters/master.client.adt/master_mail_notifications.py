@@ -1,7 +1,6 @@
 # This file is used to define mail notifier for this master.
 
 import os
-import smtplib
 
 from buildbot.status import mail
 from twisted.python import log as twlog
@@ -32,24 +31,21 @@ def emailMessage(mode, name, build, results, master_status):
 
 def AddMailNotifier(BuildmasterConfig):
   try:
-    gmailServer = smtplib.SMTP('smtp.gmail.com', 587)
-    gmailServer.starttls()
-    pass_file = os.path.join(BUILD_DIR, 'site_config', '.mail_password')
-    with open(pass_file) as f:
-      gmailServer.login("adtinfrastructure", f.read())
-    twlog.msg('Mail server login for notifications successful.')
-  except Exception:
-    # For local masters (i.e. no .mail_password) do not send alert emails.
-    twlog.msg('No mail password file. Will not send mail alerts.')
-    gmailServer = None
-  BuildmasterConfig['status'] = []
-  BuildmasterConfig['status'].extend([
-    mail.MailNotifier(
-      fromaddr='adtinfrastructure@gmail.com',
-      mode='problem',
-      messageFormatter=emailMessage,
-      extraRecipients=['adtinfrastructure@gmail.com',
-                       'emu-build-police-pst@grotations.appspotmail.com'],
-      smtpServer = gmailServer,
-    ),
-  ])
+    with open(os.path.join(BUILD_DIR, 'site_config', '.mail_password')) as f:
+      p = f.read()
+    BuildmasterConfig['status'] = []
+    BuildmasterConfig['status'].extend([
+      mail.MailNotifier(
+        fromaddr='adtinfrastructure@gmail.com',
+        mode='problem',
+        messageFormatter=emailMessage,
+        extraRecipients=['adtinfrastructure@gmail.com',
+                         'emu-build-police-pst@grotations.appspotmail.com'],
+        smtpServer = 'smtp.gmail.com',
+        smtpUser = 'adtinfrastructure',
+        smtpPassword = p,
+        smtpPort = 587,
+       ),
+     ])
+  except Exception as ex:
+    twlog.msg('Warning: Not adding MailNotifier. Could not read password file.')

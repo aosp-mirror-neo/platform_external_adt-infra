@@ -21,6 +21,7 @@ from email.Utils import formatdate
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 from StringIO import StringIO
+import smtplib
 import urllib
 
 from zope.interface import implements
@@ -655,7 +656,11 @@ class MailNotifier(base.StatusReceiverMultiService):
         s = m.as_string()
         twlog.msg('sending mail (%d bytes) to' % len(s), recipients)
         try:
-          self.smtpServer.sendmail(self.fromaddr, recipients, s)
+          emailServer = smtplib.SMTP(self.smtpServer, self.smtpPort)
+          emailServer.starttls()
+          emailServer.login(self.smtpUser, self.smtpPassword)
+          emailServer.sendmail(self.fromaddr, recipients, s)
+          emailServer.quit()
           twlog.msg('successfully sent email')
         except Exception as ex:
           twlog.msg('error: failed to send email: %s' % repr(ex))
