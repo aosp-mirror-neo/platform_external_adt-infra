@@ -49,7 +49,7 @@ def RunSteps(api):
       android_sdk_home = 'C:\\Program Files\\Android\\android-sdk'
       gnu_path = 'C:\\Program Files\\GnuWin32\\bin'
       cygwin_path = 'C:\\cygwin\\bin'
-    env_path += [gnu_path, cygwin_path]
+    env_path = [gnu_path, cygwin_path] + env_path
   else:
     raise
 
@@ -67,7 +67,7 @@ def RunSteps(api):
   dotest_path = api.path.join(script_root, 'dotest.py')
 
   api.step('Clean slave build directory',
-           ['rm', '-rf', download_path.join('tools')],
+           ['find', '.', '-delete'],
            env=env)
   api.step('Download Image',
            ['scp', remote_path,

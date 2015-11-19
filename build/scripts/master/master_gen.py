@@ -111,7 +111,7 @@ def _ComputeBuilders(builders, m_annotator):
         factory_properties=builder_data.get('properties')
     )
     actual_builders.append({
-        'auto_reboot': builder_data.get('auto_reboot', True),
+        'auto_reboot': builder_data.get('auto_reboot', False),
         'mergeRequests': merge_requests,
         'name': builder_name,
         'factory': factory,
