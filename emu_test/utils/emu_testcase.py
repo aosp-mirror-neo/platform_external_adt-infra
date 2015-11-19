@@ -21,10 +21,8 @@ class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu')):
         device = self.device if self.device != '' else 'defdev'
         for ch in [' ', '(', ')']:
             device = device.replace(ch, '_')
-        ram = self.ram if self.ram != '' else '512'
-        gpu = self.gpu if self.gpu != '' else 'yes'
         return str("%s-%s-%s-%s-gpu_%s-api%s" % (self.tag, self.abi,
-                                                 device, ram, gpu,
+                                                 device, self.ram, self.gpu,
                                                  self.api))
     def name(self):
         return str(self)
@@ -102,8 +100,9 @@ class EmuBaseTestCase(LoggedTestCase):
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
-        self.m_logger.info('Launching AVD %s, cmd: %s -avd %s', avd, exec_path, avd)
-        start_proc = psutil.Popen([exec_path, "-avd", avd], stdout=PIPE, stderr=PIPE)
+        launch_cmd = [exec_path, "-avd", avd, "-wipe-data"]
+        self.m_logger.info('Launching AVD, cmd: %s', ' '.join(launch_cmd))
+        start_proc = psutil.Popen(launch_cmd, stdout=PIPE, stderr=PIPE)
         time.sleep(5)
         if start_proc.poll() is not None and start_proc.poll() is not 0:
             self.m_logger.error(start_proc.communicate()[1])

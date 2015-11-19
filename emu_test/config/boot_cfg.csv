@@ -2,10 +2,10 @@ Device Config,,,,,,Linux,,,,Windows,,,,,MacOSX,,,
 API*,Tag*,ABI*,Device,RAM,GPU,Ubuntu 12.04 HD Graphics 4000,Ubuntu 14.04 HD 4400,Ubuntu 14.04 Quadro 600,Ubuntu 15.04 Quadro K600,Win 7 32-bit HD 4400,Win 7 64-bit HD 4400,Win 8 64-bit Quadro 600,Win 8.1 64-bit Quadro 600,Win 10 64-bit Quadro 600,Mac 10.10.5 Intel HD 5000,Mac 10.10.5 Iris Pro,Mac 10.8.5 Intel HD 5000,Mac 10.11.1 Iris Pro
 API 23,android-tv,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
-,default,armeabi-v7a,Nexus 6,2048,yes,P,P,P,P,S,S,S,S,S,S,S,S,S
-,,x86,Nexus 6,2048,yes,P,P,P,X,S,S,S,S,S,P,P,P,P
-,,x86,Nexus 5,2048,yes,P,P,P,P,S,S,S,S,S,P,P,P,P
-,,x86_64,Nexus 5,2048,yes,P,P,P,P,S,S,S,S,S,X,X,X,X
+,default,armeabi-v7a,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,X,X,X,X
+,,x86,Nexus 6,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86,Nexus 5,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86_64,Nexus 5,2048,yes,P,P,P,P,P,P,P,P,P,X,X,X,X
 ,google_apis,armeabi-v7a,Galaxy Nexus,2048,yes,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 ,,x86_64,,,,,,P,,,,,,,,,,
@@ -23,10 +23,9 @@ API 21,android-tv,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 ,android-wear,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
-,default,armeabi-v7a,,,,P,P,P,P,,,,,,P,P,P,P
-,,armeabi-v7a,,,,P,P,P,P,,,,,,P,P,P,P
-,,x86,,,,P,P,P,P,,,,,,P,P,P,P
-,,x86_64,,,,P,P,P,P,,,,,,X,X,X,X
+,default,armeabi-v7a,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86_64,,,,P,P,P,P,P,P,P,P,P,X,X,X,X
 ,google_apis,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 ,,x86_64,,,,,,P,,,,,,,,,,

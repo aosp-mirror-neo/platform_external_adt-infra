@@ -2,6 +2,7 @@
 
 import unittest
 import os
+import platform
 import time
 import psutil
 import csv
@@ -89,6 +90,9 @@ def create_test_case_from_file():
                         gpu = row[5]
                     else:
                         gpu = "yes" if api > "15" else "no"
+                    # For 32 bit machine, ram should be less than 768MB
+                    if not platform.machine().endswith('64'):
+                        ram = str(min([int(ram), 768]))
                     avd_config = AVDConfig(api, tag, abi, device, ram, gpu)
                     if op == "X":
                         setattr(BootTestCase, "test_boot_%s" % str(avd_config),
