@@ -31,6 +31,7 @@ def RunSteps(api):
   emulator_path = download_path.join('tools', 'emulator')
 
   env_path = ['%(PATH)s']
+  find_cmd = 'find'
 
   # find android sdk root directory
   home_dir = os.path.expanduser('~')
@@ -50,6 +51,7 @@ def RunSteps(api):
       gnu_path = 'C:\\Program Files\\GnuWin32\\bin'
       cygwin_path = 'C:\\cygwin\\bin'
     env_path = [gnu_path, cygwin_path] + env_path
+    find_cmd = '%s\\find' % cygwin_path
   else:
     raise
 
@@ -67,7 +69,7 @@ def RunSteps(api):
   dotest_path = api.path.join(script_root, 'dotest.py')
 
   api.step('Clean slave build directory',
-           ['find', '.', '-delete'],
+           [find_cmd, '.', '-delete'],
            env=env)
   api.step('Download Image',
            ['scp', remote_path,
