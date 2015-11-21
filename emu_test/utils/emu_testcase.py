@@ -66,7 +66,13 @@ class LoggedTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # clear up log handlers
-        cls.m_logger.handlers = []
+        def cleanup(logger):
+            for x in list(logger.handlers):
+                logger.removeHandler(x)
+                x.flush()
+                x.close()
+        cleanup(cls.m_logger)
+        cleanup(cls.simple_logger)
 
 class EmuBaseTestCase(LoggedTestCase):
     """Base class for Emulator TestCase class

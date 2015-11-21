@@ -68,9 +68,16 @@ def RunSteps(api):
   script_root = api.path.join(build_dir, os.pardir, 'emu_test')
   dotest_path = api.path.join(script_root, 'dotest.py')
 
-  api.step('Clean slave build directory',
-           [find_cmd, '.', '-delete'],
-           env=env)
+  try:
+    api.step('Clean slave build directory',
+             [find_cmd, '.', '-delete'],
+             env=env)
+  except api.step.StepFailure as f:
+    # Not able to delete some files, it won't be the fault of emulator
+    # not a stopper to run actual tests
+    # so set status to "warning" and continue test
+    f.result.presentation.status = api.step.WARNING
+
   api.step('Download Image',
            ['scp', remote_path,
            '.'],
