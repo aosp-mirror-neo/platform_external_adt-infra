@@ -1,2 +1,3 @@
 *.pyc
-./scripts/slave/.recipe_deps
+scripts/slave/.recipe_deps
+site_config/.*

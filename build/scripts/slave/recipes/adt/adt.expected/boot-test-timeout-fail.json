@@ -1,0 +1,98 @@
+[
+  {
+    "cmd": [
+      "find",
+      ".",
+      "-delete"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "/usr/local/google/home/navabi/Android/android-sdk-linux",
+      "PATH": "%(PATH)s:/usr/local/google/home/navabi/Android/android-sdk-linux/tools:/usr/local/google/home/navabi/Android/android-sdk-linux/platform-tools"
+    },
+    "name": "Clean slave build directory"
+  },
+  {
+    "cmd": [
+      "scp",
+      "user@172.27.213.40:/images/emu_gspoller_linux/sdk-repo-windows-tools-2344972.zip",
+      "."
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "/usr/local/google/home/navabi/Android/android-sdk-linux",
+      "PATH": "%(PATH)s:/usr/local/google/home/navabi/Android/android-sdk-linux/tools:/usr/local/google/home/navabi/Android/android-sdk-linux/platform-tools"
+    },
+    "name": "Download Image"
+  },
+  {
+    "cmd": [
+      "unzip",
+      "[SLAVE_BUILD]/sdk-repo-windows-tools-2344972.zip"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "/usr/local/google/home/navabi/Android/android-sdk-linux",
+      "PATH": "%(PATH)s:/usr/local/google/home/navabi/Android/android-sdk-linux/tools:/usr/local/google/home/navabi/Android/android-sdk-linux/platform-tools"
+    },
+    "name": "Unzip Image File"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "[BUILD]/../emu_test/dotest.py",
+      "-l",
+      "INFO",
+      "-exec",
+      "[SLAVE_BUILD]/tools/emulator",
+      "-p",
+      "test_boot.*",
+      "-c",
+      "[BUILD]/../emu_test/config/boot_cfg.csv",
+      "-n",
+      "Ubuntu 15.04 Quadro K600"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "/usr/local/google/home/navabi/Android/android-sdk-linux",
+      "PATH": "%(PATH)s:/usr/local/google/home/navabi/Android/android-sdk-linux/tools:/usr/local/google/home/navabi/Android/android-sdk-linux/platform-tools"
+    },
+    "name": "Run Emulator Boot Test",
+    "stderr": "/path/to/tmp/err",
+    "~followup_annotations": [
+      "step returned non-zero exit code: 1",
+      "@@@STEP_LOG_END@TIMEOUT: TIMEOUT: foobar@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "[BUILD]/../emu_test/dotest.py",
+      "-l",
+      "INFO",
+      "-exec",
+      "[SLAVE_BUILD]/tools/emulator",
+      "-p",
+      "test_cts.*",
+      "-c",
+      "[BUILD]/../emu_test/config/cts_cfg.csv",
+      "-n",
+      "Ubuntu 15.04 Quadro K600"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "/usr/local/google/home/navabi/Android/android-sdk-linux",
+      "PATH": "%(PATH)s:/usr/local/google/home/navabi/Android/android-sdk-linux/tools:/usr/local/google/home/navabi/Android/android-sdk-linux/platform-tools"
+    },
+    "name": "Run Emulator CTS Test",
+    "stderr": "/path/to/tmp/err"
+  },
+  {
+    "name": "$result",
+    "reason": "1 out of 2 aggregated steps failed. Failures: Step('Run Emulator Boot Test') failed with return_code 1",
+    "status_code": 1
+  }
+]

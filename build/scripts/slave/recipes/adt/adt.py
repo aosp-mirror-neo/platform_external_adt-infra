@@ -6,10 +6,10 @@
 
 from recipe_engine.types import freeze
 import os
-import platform
 
 DEPS = [
     'path',
+    'platform',
     'properties',
     'python',
     'raw_io',
@@ -35,14 +35,13 @@ def RunSteps(api):
 
   # find android sdk root directory
   home_dir = os.path.expanduser('~')
-  host = platform.system()
-  if host == "Darwin":
+  if api.platform.is_mac:
     android_sdk_home = os.path.join(home_dir, 'Android/android-sdk-macosx')
-  elif host == "Linux":
+  elif api.platform.is_linux:
     android_sdk_home = os.path.join(home_dir, 'Android/android-sdk-linux')
   # On windows, we need cygwin and GnuWin for commands like, rm, scp, unzip
-  elif host == "Windows":
-    if 'x86' in os.environ['PROGRAMFILES']:
+  elif api.platform.is_win:
+    if api.platform.bits == 64:
       android_sdk_home = 'C:\\Program Files (x86)\\Android\\android-sdk'
       gnu_path = 'C:\\Program Files (x86)\\GnuWin32\\bin'
       cygwin_path = 'C:\\cygwin64\\bin'
@@ -53,7 +52,7 @@ def RunSteps(api):
     env_path = [gnu_path, cygwin_path] + env_path
     find_cmd = '%s\\find' % cygwin_path
   else:
-    raise
+    raise # pragma: no cover
 
   android_tools_dir = os.path.join(android_sdk_home, 'tools')
   android_platform_dir = os.path.join(android_sdk_home, 'platform-tools')
@@ -72,7 +71,7 @@ def RunSteps(api):
     api.step('Clean slave build directory',
              [find_cmd, '.', '-delete'],
              env=env)
-  except api.step.StepFailure as f:
+  except api.step.StepFailure as f: # pragma: no cover
     # Not able to delete some files, it won't be the fault of emulator
     # not a stopper to run actual tests
     # so set status to "warning" and continue test
@@ -124,11 +123,71 @@ def RunSteps(api):
 
 def GenTests(api):
   yield (
-    api.test('basic') +
+    api.test('basic-win32') +
+    api.platform.name('win') +
+    api.platform.bits(32) +
+    api.properties(
+      mastername='client.adt',
+      buildername='Win 7 32-bit HD 4400',
+      image='/images/emu_gspoller_windows/sdk-repo-windows-tools-2344972.zip',
+    )
+  )
+
+  yield (
+    api.test('basic-win64') +
+    api.platform.name('win') +
+    api.platform.bits(64) +
     api.properties(
       mastername='client.adt',
       buildername='Win 7 64-bit HD 4400',
-      image='/usr/local/google/code/adt_buildbot_repo/external/adt-infra/build/masters/'
-            'master.client.adt/images/emu_gspoller_windows/sdk-repo-windows-tools-2344972.zip',
+      image='/images/emu_gspoller_windows/sdk-repo-windows-tools-2344972.zip',
     )
+  )
+
+  yield (
+    api.test('basic-mac') +
+    api.platform.name('mac') +
+    api.properties(
+      mastername='client.adt',
+      buildername='Mac 10.10.5 Iris Pro',
+      image='/images/emu_gspoller_mac/sdk-repo-windows-tools-2344972.zip',
+    )
+  )
+
+  yield (
+    api.test('basic-linux') +
+    api.platform.name('linux') +
+    api.properties(
+      mastername='client.adt',
+      buildername='Ubuntu 15.04 Quadro K600',
+      image='/images/emu_gspoller_linux/sdk-repo-windows-tools-2344972.zip',
+    )
+  )
+
+  yield (
+    api.test('boot-test-timeout-fail') +
+    api.platform.name('linux') +
+    api.properties(
+      mastername='client.adt',
+      buildername='Ubuntu 15.04 Quadro K600',
+      image='/images/emu_gspoller_linux/sdk-repo-windows-tools-2344972.zip'
+    ) +
+    api.override_step_data('Run Emulator Boot Test',
+                           api.raw_io.stream_output('TIMEOUT: foobar', 'stderr')
+    ) +
+    api.step_data('Run Emulator Boot Test', retcode=1)
+  )
+
+  yield (
+    api.test('cts-test-timeout-fail') +
+    api.platform.name('linux') +
+    api.properties(
+      mastername='client.adt',
+      buildername='Ubuntu 15.04 Quadro K600',
+      image='/images/emu_gspoller_linux/sdk-repo-windows-tools-2344972.zip'
+    ) +
+    api.override_step_data('Run Emulator CTS Test',
+                           api.raw_io.stream_output('TIMEOUT: foobar', 'stderr')
+    ) +
+    api.step_data('Run Emulator CTS Test', retcode=1)
   )

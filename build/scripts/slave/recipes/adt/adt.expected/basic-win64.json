@@ -1,0 +1,93 @@
+[
+  {
+    "cmd": [
+      "C:\\cygwin64\\bin\\find",
+      ".",
+      "-delete"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "C:\\Program Files (x86)\\Android\\android-sdk",
+      "PATH": "C:\\Program Files (x86)\\GnuWin32\\bin;C:\\cygwin64\\bin;%(PATH)s;C:\\Program Files (x86)\\Android\\android-sdk/tools;C:\\Program Files (x86)\\Android\\android-sdk/platform-tools"
+    },
+    "name": "Clean slave build directory"
+  },
+  {
+    "cmd": [
+      "scp",
+      "user@172.27.213.40:/images/emu_gspoller_windows/sdk-repo-windows-tools-2344972.zip",
+      "."
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "C:\\Program Files (x86)\\Android\\android-sdk",
+      "PATH": "C:\\Program Files (x86)\\GnuWin32\\bin;C:\\cygwin64\\bin;%(PATH)s;C:\\Program Files (x86)\\Android\\android-sdk/tools;C:\\Program Files (x86)\\Android\\android-sdk/platform-tools"
+    },
+    "name": "Download Image"
+  },
+  {
+    "cmd": [
+      "unzip",
+      "[SLAVE_BUILD]\\sdk-repo-windows-tools-2344972.zip"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "C:\\Program Files (x86)\\Android\\android-sdk",
+      "PATH": "C:\\Program Files (x86)\\GnuWin32\\bin;C:\\cygwin64\\bin;%(PATH)s;C:\\Program Files (x86)\\Android\\android-sdk/tools;C:\\Program Files (x86)\\Android\\android-sdk/platform-tools"
+    },
+    "name": "Unzip Image File"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "[BUILD]\\..\\emu_test\\dotest.py",
+      "-l",
+      "INFO",
+      "-exec",
+      "[SLAVE_BUILD]\\tools\\emulator",
+      "-p",
+      "test_boot.*",
+      "-c",
+      "[BUILD]\\..\\emu_test\\config\\boot_cfg.csv",
+      "-n",
+      "Win 7 64-bit HD 4400"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "C:\\Program Files (x86)\\Android\\android-sdk",
+      "PATH": "C:\\Program Files (x86)\\GnuWin32\\bin;C:\\cygwin64\\bin;%(PATH)s;C:\\Program Files (x86)\\Android\\android-sdk/tools;C:\\Program Files (x86)\\Android\\android-sdk/platform-tools"
+    },
+    "name": "Run Emulator Boot Test",
+    "stderr": "/path/to/tmp/err"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "[BUILD]\\..\\emu_test\\dotest.py",
+      "-l",
+      "INFO",
+      "-exec",
+      "[SLAVE_BUILD]\\tools\\emulator",
+      "-p",
+      "test_cts.*",
+      "-c",
+      "[BUILD]\\..\\emu_test\\config\\cts_cfg.csv",
+      "-n",
+      "Win 7 64-bit HD 4400"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "C:\\Program Files (x86)\\Android\\android-sdk",
+      "PATH": "C:\\Program Files (x86)\\GnuWin32\\bin;C:\\cygwin64\\bin;%(PATH)s;C:\\Program Files (x86)\\Android\\android-sdk/tools;C:\\Program Files (x86)\\Android\\android-sdk/platform-tools"
+    },
+    "name": "Run Emulator CTS Test",
+    "stderr": "/path/to/tmp/err"
+  },
+  {
+    "name": "$result",
+    "recipe_result": null,
+    "status_code": 0
+  }
+]
