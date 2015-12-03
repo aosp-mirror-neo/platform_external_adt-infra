@@ -6,6 +6,7 @@ import ast
 import os
 
 from buildbot.schedulers.basic import SingleBranchScheduler
+from buildbot.schedulers.filter import ChangeFilter
 from buildbot.schedulers.timed import Nightly
 from buildbot.status.mail import MailNotifier
 from buildbot import util
@@ -19,7 +20,8 @@ from master import master_utils
 from master import repo_poller
 from master import slaves_list
 from master.factory import annotator_factory
-from gs_poll_scheduler import GSPeriodic
+from gs_multi_poller import GSMultiPoller
+from emu_gs_scheduler import EmulatorSingleBranchScheduler
 
 def PopulateBuildmasterConfig(BuildmasterConfig, builders_path,
                               active_master_cls):
@@ -128,11 +130,14 @@ def _ComputeBuilders(builders, m_annotator):
 def _ComputeSchedulers(builders):
   scheduler_to_builders = {}
   for builder_name, builder_data in builders['builders'].items():
-    scheduler_name = builder_data['scheduler']
-    if scheduler_name:
-      if scheduler_name not in builders['schedulers']:
-        raise ValueError('unknown scheduler "%s"' % scheduler_name)
-      scheduler_to_builders.setdefault(scheduler_name, []).append(builder_name)
+    scheduler_names = builder_data['scheduler']
+    if scheduler_names:
+      if not isinstance(scheduler_names, list):
+        scheduler_names = [scheduler_names]
+      for scheduler_name in scheduler_names:
+        if scheduler_name not in builders['schedulers']:
+          raise ValueError('unknown scheduler "%s"' % scheduler_name)
+        scheduler_to_builders.setdefault(scheduler_name, []).append(builder_name)
 
   schedulers = []
   for scheduler_name, scheduler_values in builders['schedulers'].items():
@@ -155,13 +160,13 @@ def _ComputeSchedulers(builders):
           builderNames=builder_names))
 
     elif scheduler_type == 'gs_poller':
-      schedulers.append(GSPeriodic(
-          gs_bucket=scheduler_values['gs_bucket'],
-          gs_path=scheduler_values['gs_path'],
-          name_identifier=scheduler_values['identifier'],
+      schedulers.append(EmulatorSingleBranchScheduler(
           name=scheduler_name,
+          treeStableTimer=1,
           builderNames=builder_names,
-          periodicBuildTimer=scheduler_values['periodicBuildTimer']))
+          change_filter = ChangeFilter(
+                branch=scheduler_values['branch'],
+                project=scheduler_values['project'])))
 
     else:
       raise ValueError('unsupported scheduler type "%s"' % scheduler_type)
@@ -172,6 +177,20 @@ def _ComputeSchedulers(builders):
 def _ComputeChangeSourceAndTagComparator(builders):
   change_source = []
   tag_comparator = None
+
+  if builders['change_source'] is not None:
+    for cs_name, cs_values in builders['change_source'].items():
+      if cs_values['type'] == 'GSMultiPoller':
+        change_source.append(GSMultiPoller(cs_name,
+                                     cs_values['gs_bucket'],
+                                     cs_values['gs_path'],
+                                     cs_values['pollInterval'],
+                                     cs_values['project'],
+                                     cs_values['branch'],
+                                     cs_values['name_identifier']))
+      else:
+        raise ValueError('unsupported change source type %s' % cs_values['type'])
+    return change_source, tag_comparator
 
   for url in sorted(set(v['git_repo_url'] for
                         v in builders['schedulers'].values()

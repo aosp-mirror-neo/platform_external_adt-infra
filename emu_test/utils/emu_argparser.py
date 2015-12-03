@@ -1,6 +1,7 @@
 import argparse
+import json
+
 emu_args = None
-import re
 
 def get_parser():
     parser = argparse.ArgumentParser(description='Argument parser for emu test')
@@ -32,5 +33,8 @@ def get_parser():
     parser.add_argument('-n', type=str, dest='builder_name', action='store',
                         default=None,
                         help='builder name as appeared in config_file')
+    parser.add_argument('-f', type=json.loads, dest='filter_dict', action='store',
+                        default=None,
+                        help='json style pattern to filter config_file')
     parser.add_argument('unittest_args', nargs='*')
     return parser

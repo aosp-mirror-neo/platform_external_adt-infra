@@ -11,7 +11,7 @@ class LaunchError(Error):
 
     def __init__(self, avd):
         self.avd = avd
-		
+
 class TimeoutError(Error):
     """Exception raised for timeout
 
@@ -35,3 +35,10 @@ class SlowBootError(Error):
     def __init__(self, cmd, expected_time):
         self.cmd = cmd
         self.expected_time = expected_time
+
+class ConfigError(Error):
+    """Exception raised when configuration file is not valid
+
+    Attributes:
+    """
+    pass

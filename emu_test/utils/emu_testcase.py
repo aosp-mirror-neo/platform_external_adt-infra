@@ -15,7 +15,7 @@ from subprocess import PIPE
 from collections import namedtuple
 from ConfigParser import ConfigParser
 
-class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu')):
+class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu, tot_image, ranchu')):
     __slots__ = ()
     def __str__(self):
         device = self.device if self.device != '' else 'defdev'
@@ -106,13 +106,16 @@ class EmuBaseTestCase(LoggedTestCase):
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
-        launch_cmd = [exec_path, "-avd", avd, "-wipe-data"]
+        launch_cmd = [exec_path, "-avd", str(avd), "-wipe-data"]
+        if avd.ranchu == "yes":
+           launch_cmd += ["-ranchu"]
+
         self.m_logger.info('Launching AVD, cmd: %s', ' '.join(launch_cmd))
         start_proc = psutil.Popen(launch_cmd, stdout=PIPE, stderr=PIPE)
         time.sleep(5)
         if start_proc.poll() is not None and start_proc.poll() is not 0:
             self.m_logger.error(start_proc.communicate()[1])
-            raise LaunchError(avd)
+            raise LaunchError(str(avd))
 
     def launch_emu_and_wait(self, avd):
         """Launch given avd and wait for boot completion, return boot time"""

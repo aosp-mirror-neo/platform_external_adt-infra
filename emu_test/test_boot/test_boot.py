@@ -53,12 +53,30 @@ class BootTestCase(EmuBaseTestCase):
     def run_boot_test(self, avd_config):
         self.avd_config = avd_config
         self.assertEqual(self.create_avd(avd_config), 0)
-        self.boot_check(str(avd_config))
+        self.boot_check(avd_config)
 
 def create_test_case_from_file():
+    """ Create test case based on test configuration file. """
 
-    def create_test_case(avd_config):
-        return lambda self: self.run_boot_test(avd_config)
+    def valid_case(avd_config):
+        if emu_args.filter_dict is not None:
+            for key, value in emu_args.filter_dict.iteritems():
+                if getattr(avd_config, key) != value:
+                    return False
+        return True
+
+    def create_test_case(avd_config, op):
+        if op == "S" or op == "" or not valid_case(avd_config):
+            return
+
+        func = lambda self: self.run_boot_test(avd_config)
+        if op == "X":
+            func = unittest.expectedFailure(func)
+        # TODO: handle flakey tests
+        elif op == "F":
+            func = func
+        qemu_str = "_qemu2" if avd_config.ranchu == "yes" else ""
+        setattr(BootTestCase, "test_boot_%s%s" % (str(avd_config), qemu_str), func)
 
     with open(emu_args.config_file, "rb") as file:
         reader = csv.reader(file)
@@ -93,12 +111,15 @@ def create_test_case_from_file():
                     # For 32 bit machine, ram should be less than 768MB
                     if not platform.machine().endswith('64'):
                         ram = str(min([int(ram), 768]))
-                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu)
-                    if op == "X":
-                        setattr(BootTestCase, "test_boot_%s" % str(avd_config),
-                                unittest.expectedFailure(create_test_case(avd_config)))
-                    else:
-                        setattr(BootTestCase, "test_boot_%s" % str(avd_config), create_test_case(avd_config))
+                    if api < "22" and row[6] == "yes":
+                        raise ConfigError()
+                    tot_image = row[6] if row[6] == "yes" else "no"
+                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="no")
+                    create_test_case(avd_config, op)
+                    # for unreleased images, test with qemu2 in addition
+                    if tot_image == "yes":
+                        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="yes")
+                        create_test_case(avd_config, op)
 
 def create_test_case_for_avds():
     avd_list = emu_args.avd_list
