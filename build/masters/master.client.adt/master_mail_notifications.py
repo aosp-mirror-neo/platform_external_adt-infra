@@ -15,7 +15,7 @@ def emailMessage(mode, name, build, results, master_status):
   text += 'link: %s\n' % master_status.getURLForThing(build)
   text += 'builder: %s\n' % name
   text += 'buildslave: %s\n' % build.getSlavename()
-  text += 'build reason: %s\n' % build.getReason()
+  text += 'build reason: %s\n\n' % build.getReason()
 
   result_text = build.getText()
   if result_text:
