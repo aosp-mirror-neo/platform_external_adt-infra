@@ -37,8 +37,10 @@ def get_dst_dir(remote_path):
 def download_and_unzip():
   file_list = args.remote_file_list.split(',')
   dst_dir = get_dst_dir(file_list[0])
-  if dst_dir is not None:
-    subprocess.call(['rm', '-rf', os.path.dirname(dst_dir)])
+
+  def verbose_call(cmd):
+    print "Run command %s" % ' '.join(cmd)
+    subprocess.check_call(cmd)
 
   for file_path in file_list:
     file_path = file_path.strip('\n')
@@ -47,16 +49,21 @@ def download_and_unzip():
     dst_dir = get_dst_dir(file_path)
     remote_path = '%s@%s:%s' % (args.remote_user, args.remote_ip, file_path)
     file_name = os.path.basename(remote_path)
-    subprocess.call(['scp', remote_path, '.'])
-    if dst_dir is not None:
-      subprocess.call(['mkdir', '-p', dst_dir])
-      if 'x86_64' in file_path:
-        subprocess.call(['rm', '-rf', os.path.join(dst_dir,'x86_64')])
+    try:
+      verbose_call(['scp', remote_path, '.'])
+      if dst_dir is not None:
+        verbose_call(['mkdir', '-p', dst_dir])
+        if 'x86_64' in file_path:
+          verbose_call(['rm', '-rf', os.path.join(dst_dir,'x86_64')])
+        else:
+          verbose_call(['rm', '-rf', os.path.join(dst_dir,'x86')])
+        verbose_call(['unzip', '-o', file_name, '-d', dst_dir])
       else:
-        subprocess.call(['rm', '-rf', os.path.join(dst_dir,'x86')])
-      subprocess.call(['unzip', '-o', file_name, '-d', dst_dir])
-    else:
-      subprocess.call(['unzip', '-o', file_name])
+        verbose_call(['unzip', '-o', file_name])
+    except Exception as e:
+      print "Error in download_and_unzip %r" % e
+      return 1
+  return 0
 
 if __name__ == "__main__":
-  download_and_unzip()
+  exit(download_and_unzip())
