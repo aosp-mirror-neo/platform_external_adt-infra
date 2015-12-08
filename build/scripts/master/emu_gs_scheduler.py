@@ -28,25 +28,25 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
         emu_cache_file = 'emulator_%s_poller.cache' % x
     try:
         with open(emu_cache_file, 'r') as f:
-            content = f.readlines()
+            content = f.read().splitlines()
             emu_revision = content[0]
-            emu_file = ','.join(content[1:]).rstrip('\n')
+            emu_file = ','.join(content[1:])
     except:
         log.msg("%s: Error - emulator cache file not available, cancle build" % self.name)
         cancel_build = True
     try:
         with open('sys_image_lmp_poller.cache', 'r') as f:
-            content = f.readlines()
+            content = f.read().splitlines()
             lmp_revision = content[0]
-            lmp_file = ','.join(content[1:]).rstrip('\n')
+            lmp_file = ','.join(content[1:])
     except:
         lmp_revision = 'None'
         lmp_file = ''
     try:
         with open('sys_image_mnc_poller.cache', 'r') as f:
-            content = f.readlines()
+            content = f.read().splitlines()
             mnc_revision = content[0]
-            mnc_file = ','.join(content[1:]).rstrip('\n')
+            mnc_file = ','.join(content[1:])
     except:
         mnc_revision = 'None'
         mnc_file = ''

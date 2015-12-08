@@ -2,7 +2,7 @@
 
 import os
 
-from buildbot.status import mail
+from buildbot.status import mail, builder
 from twisted.python import log as twlog
 
 BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,
@@ -17,17 +17,33 @@ def emailMessage(mode, name, build, results, master_status):
   text += 'buildslave: %s\n' % build.getSlavename()
   text += 'build reason: %s\n' % build.getReason()
 
+  result_text = build.getText()
+  if result_text:
+    text += 'Failed steps: %s\n' % '\n'.join(result_text[1:][::2])
+
+  #Include name of failure tests
+  text += '\nFailed Tests:\n'
+  for logf in build.getLogs():
+    logName = logf.getName()
+    logStatus,_ = logf.getStep().getResults()
+    if logStatus == builder.FAILURE and ':' in logName:
+      text += '%s\n' % logName
+
+  text += '\n'
   ss = build.getSourceStamp()
   if ss:
+    def getRevStr(props):
+      return 'emulator: %s, mnc_revision: %s, lmp_revision: %s' % (props.getProperty('emu_revision', 'None'),
+                                                                   props.getProperty('mnc_revision', 'None'),
+                                                                   props.getProperty('lmp_revision', 'None'))
     failing_props = build.getProperties()
     previous_props = build.getPreviousBuild().getProperties()
-    if 'image' in failing_props:
-      text += 'failing emulator image: %s\n' % failing_props['image']
-    if 'image' in previous_props:
-      text += 'previous passing emulator image: %s\n' % previous_props['image']
+
+    text += 'Failing build revisions: %s\n' % getRevStr(failing_props)
+    #text += 'Previous passing revisions: %s\n\n' % getRevStr(previous_props)
 
   subject = 'Emulator build/test failure on %s' % name
-  return { 'subject': subject,'body' : text, 'type' : 'plain' }
+  return { 'subject': subject, 'body': text, 'type': 'plain' }
 
 def AddMailNotifier(BuildmasterConfig):
   try:
@@ -37,7 +53,7 @@ def AddMailNotifier(BuildmasterConfig):
     BuildmasterConfig['status'].extend([
       mail.MailNotifier(
         fromaddr='adtinfrastructure@gmail.com',
-        mode='problem',
+        mode='failing',
         messageFormatter=emailMessage,
         extraRecipients=['adtinfrastructure@gmail.com',
                          'emu-build-police-pst@grotations.appspotmail.com'],
