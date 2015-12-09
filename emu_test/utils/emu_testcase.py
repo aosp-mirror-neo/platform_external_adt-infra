@@ -106,7 +106,10 @@ class EmuBaseTestCase(LoggedTestCase):
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
-        launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
+        if os.name == "nt":
+            launch_cmd = [exec_path, "-avd", str(avd), "-wipe-data"]
+        else:
+            launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
         if avd.ranchu == "yes":
            launch_cmd += ["-ranchu"]
 
