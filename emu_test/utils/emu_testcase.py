@@ -69,7 +69,6 @@ class LoggedTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # clear up log handlers
-        psutil.Popen(["adb", "kill-server"])
         def cleanup(logger):
             for x in list(logger.handlers):
                 logger.removeHandler(x)
@@ -110,7 +109,7 @@ class EmuBaseTestCase(LoggedTestCase):
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
-        launch_cmd = [exec_path, "-avd", str(avd), "-port", avd.port, "-verbose", "-show-kernel", "-wipe-data"]
+        launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
         if avd.ranchu == "yes":
            launch_cmd += ["-ranchu"]
 
@@ -146,7 +145,7 @@ class EmuBaseTestCase(LoggedTestCase):
         self.launch_emu(avd)
         completed = "0"
         while time.time()-start_time < emu_args.timeout_in_seconds:
-            process = psutil.Popen(["adb", "-s", "emulator-%s" % avd.port, "shell", "getprop", "sys.boot_completed"], stdout=PIPE, stderr=PIPE)
+            process = psutil.Popen(["adb", "shell", "getprop", "sys.boot_completed"], stdout=PIPE, stderr=PIPE)
             (output, err) = process.communicate()
             exit_code = process.wait()
             self.m_logger.debug('AVD %s, %s %s', avd, output, err)
