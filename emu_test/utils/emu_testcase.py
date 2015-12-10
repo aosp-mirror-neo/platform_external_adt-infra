@@ -9,9 +9,10 @@ import unittest
 import logging
 import time
 import psutil
+import threading
 from emu_error import *
 from emu_argparser import emu_args
-from subprocess import PIPE
+from subprocess import PIPE, STDOUT
 from collections import namedtuple
 from ConfigParser import ConfigParser
 
@@ -51,15 +52,17 @@ class LoggedTestCase(unittest.TestCase):
 
         file_handler = logging.FileHandler(os.path.join(emu_args.session_dir, file_name))
         file_handler.setFormatter(formatter)
+        file_handler.setLevel(logging.DEBUG)
         # Redirect message to standard out, these messages indicate test progress, they don't belong to stderr
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
+        console_handler.setLevel(getattr(logging, emu_args.loglevel.upper()))
 
         logger = logging.getLogger(logger_name)
         logger.propagate = False
         logger.addHandler(file_handler)
         logger.addHandler(console_handler)
-        logger.setLevel(getattr(logging, emu_args.loglevel.upper()))
+        logger.setLevel(logging.DEBUG)
 
         return logger
 
@@ -106,20 +109,34 @@ class EmuBaseTestCase(LoggedTestCase):
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
-        if os.name == "nt":
-            launch_cmd = [exec_path, "-avd", str(avd), "-wipe-data"]
-        else:
-            launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
+        launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
         if avd.ranchu == "yes":
            launch_cmd += ["-ranchu"]
 
+        def launch_in_thread():
+            self.start_proc = psutil.Popen(launch_cmd, stdout=PIPE, stderr=STDOUT)
+            lines_iterator = iter(self.start_proc.stdout.readline, b"")
+            for line in lines_iterator:
+            # FIXME: the stdout and stderr from emulator are not true, so we tell if a message is error
+            # based on those key words.
+                if any(x in line for x in ["ERROR", "FAIL", "error", "failed", "FATAL"]):
+                    self.m_logger.error(line)
+                else:
+                    self.m_logger.debug(line)
+
+        def find_emu_proc():
+            for proc in psutil.process_iter():
+                if proc.name() != "emulator.exe" and ("emulator" in proc.name() or "qemu-system" in proc.name()):
+                    self.m_logger.debug("Found - %s, pid - %d, status - %s", proc.name(), proc.pid, proc.status())
+                    if proc.status() != psutil.STATUS_ZOMBIE:
+                        return proc
+            return None
+
         self.m_logger.info('Launching AVD, cmd: %s', ' '.join(launch_cmd))
-        self.start_proc = psutil.Popen(launch_cmd, stdout=PIPE, stderr=PIPE)
+        t_launch = threading.Thread(target=launch_in_thread)
+        t_launch.start()
         time.sleep(5)
-        if self.start_proc.poll() is not None and self.start_proc.poll() is not 0:
-            out, err = self.start_proc.communicate()
-            self.m_logger.error(out)
-            self.m_logger.error(err)
+        if find_emu_proc() is None:
             raise LaunchError(str(avd))
 
     def launch_emu_and_wait(self, avd):

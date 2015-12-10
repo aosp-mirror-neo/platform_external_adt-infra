@@ -7,7 +7,6 @@ import time
 import psutil
 import csv
 import shutil
-from subprocess import Popen, PIPE
 
 from utils.emu_error import *
 from utils.emu_argparser import emu_args
@@ -24,7 +23,7 @@ class BootTestCase(EmuBaseTestCase):
 
     def tearDown(self):
         self.m_logger.debug('First try - quit emulator by adb emu kill')
-        kill_proc = Popen(["adb", "emu", "kill"], stdout=PIPE, stderr=PIPE)
+        kill_proc = psutil.Popen(["adb", "emu", "kill"])
         # check emulator process is terminated
 
         if not self.term_check(timeout=10):
@@ -42,6 +41,7 @@ class BootTestCase(EmuBaseTestCase):
         try:
             os.remove(os.path.join(avd_dir, '%s.ini' % self.avd_config.name()))
             shutil.rmtree(os.path.join(avd_dir, '%s.avd' % self.avd_config.name()), ignore_errors=True)
+            kill_proc.kill()
         except:
             pass
 
