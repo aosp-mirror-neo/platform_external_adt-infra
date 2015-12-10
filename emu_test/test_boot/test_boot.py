@@ -41,7 +41,6 @@ class BootTestCase(EmuBaseTestCase):
         try:
             os.remove(os.path.join(avd_dir, '%s.ini' % self.avd_config.name()))
             shutil.rmtree(os.path.join(avd_dir, '%s.avd' % self.avd_config.name()), ignore_errors=True)
-            kill_proc.kill()
         except:
             pass
 
