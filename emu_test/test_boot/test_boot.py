@@ -54,6 +54,12 @@ class BootTestCase(EmuBaseTestCase):
         self.assertEqual(self.create_avd(avd_config), 0)
         self.boot_check(avd_config)
 
+def get_port():
+    if not hasattr(get_port, '_port'):
+        get_port._port = 5552
+    get_port._port += 2
+    return str(get_port._port)
+
 def create_test_case_from_file():
     """ Create test case based on test configuration file. """
 
@@ -113,11 +119,11 @@ def create_test_case_from_file():
                     if api < "22" and row[6] == "yes":
                         raise ConfigError()
                     tot_image = row[6] if row[6] == "yes" else "no"
-                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="no")
+                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="no", port=get_port())
                     create_test_case(avd_config, op)
                     # for unreleased images, test with qemu2 in addition
                     if tot_image == "yes":
-                        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="yes")
+                        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="yes", port=get_port())
                         create_test_case(avd_config, op)
 
 def create_test_case_for_avds():

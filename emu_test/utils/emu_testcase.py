@@ -16,7 +16,7 @@ from subprocess import PIPE, STDOUT
 from collections import namedtuple
 from ConfigParser import ConfigParser
 
-class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu, tot_image, ranchu')):
+class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu, tot_image, ranchu, port')):
     __slots__ = ()
     def __str__(self):
         device = self.device if self.device != '' else 'defdev'
@@ -69,6 +69,7 @@ class LoggedTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # clear up log handlers
+        psutil.Popen(["adb", "kill-server"])
         def cleanup(logger):
             for x in list(logger.handlers):
                 logger.removeHandler(x)
@@ -109,7 +110,7 @@ class EmuBaseTestCase(LoggedTestCase):
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
-        launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
+        launch_cmd = [exec_path, "-avd", str(avd), "-port", avd.port, "-verbose", "-show-kernel", "-wipe-data"]
         if avd.ranchu == "yes":
            launch_cmd += ["-ranchu"]
 
@@ -119,7 +120,7 @@ class EmuBaseTestCase(LoggedTestCase):
             for line in lines_iterator:
             # FIXME: the stdout and stderr from emulator are not true, so we tell if a message is error
             # based on those key words.
-                if any(x in line for x in ["ERROR", "FAIL", "error", "failed", "FATAL"]):
+                if any(x in line for x in ["ERROR", "FAIL", "error", "failed", "FATAL"]) and not line.startswith('['):
                     self.m_logger.error(line)
                 else:
                     self.m_logger.debug(line)
@@ -145,7 +146,7 @@ class EmuBaseTestCase(LoggedTestCase):
         self.launch_emu(avd)
         completed = "0"
         while time.time()-start_time < emu_args.timeout_in_seconds:
-            process = psutil.Popen(["adb", "shell", "getprop", "sys.boot_completed"], stdout=PIPE, stderr=PIPE)
+            process = psutil.Popen(["adb", "-s", "emulator-%s" % avd.port, "shell", "getprop", "sys.boot_completed"], stdout=PIPE, stderr=PIPE)
             (output, err) = process.communicate()
             exit_code = process.wait()
             self.m_logger.debug('AVD %s, %s %s', avd, output, err)
