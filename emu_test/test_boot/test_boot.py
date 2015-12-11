@@ -26,7 +26,7 @@ class BootTestCase(EmuBaseTestCase):
         kill_proc = psutil.Popen(["adb", "emu", "kill"])
         # check emulator process is terminated
 
-        if not self.term_check(timeout=10):
+        if not self.term_check(timeout=5):
             self.m_logger.debug('Second try - quit emulator by psutil')
             for x in psutil.process_iter():
                 proc = psutil.Process(x.pid)

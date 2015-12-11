@@ -126,7 +126,7 @@ class EmuBaseTestCase(LoggedTestCase):
 
         def find_emu_proc():
             for proc in psutil.process_iter():
-                if proc.name() != "emulator.exe" and ("emulator" in proc.name() or "qemu-system" in proc.name()):
+                if proc.name() != "emulator.exe" and "crash-service" not in proc.name() and ("emulator" in proc.name() or "qemu-system" in proc.name()):
                     self.m_logger.debug("Found - %s, pid - %d, status - %s", proc.name(), proc.pid, proc.status())
                     if proc.status() != psutil.STATUS_ZOMBIE:
                         return proc
@@ -152,9 +152,10 @@ class EmuBaseTestCase(LoggedTestCase):
             if exit_code is 0:
                 completed = output.strip()
             if completed is "1":
-                break;
+                break
             time.sleep(1)
         if completed is not "1":
+            self.m_logger.info('command output - %s %s', output, err)
             self.m_logger.error('AVD %s didn\'t boot up within %s seconds', avd, emu_args.timeout_in_seconds)
             raise TimeoutError(avd, emu_args.timeout_in_seconds)
         boot_time = time.time() - start_time
