@@ -7,8 +7,8 @@
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {
-      "ANDROID_SDK_ROOT": "C:\\Program Files\\Android\\android-sdk",
-      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;C:\\Program Files\\Android\\android-sdk/tools;C:\\Program Files\\Android\\android-sdk/platform-tools"
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk",
+      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;/Users/chying/Android/android-sdk/tools;/Users/chying/Android/android-sdk/platform-tools"
     },
     "name": "Clean slave build directory"
   },
@@ -26,8 +26,8 @@
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {
-      "ANDROID_SDK_ROOT": "C:\\Program Files\\Android\\android-sdk",
-      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;C:\\Program Files\\Android\\android-sdk/tools;C:\\Program Files\\Android\\android-sdk/platform-tools"
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk",
+      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;/Users/chying/Android/android-sdk/tools;/Users/chying/Android/android-sdk/platform-tools"
     },
     "name": "Download and Unzip Images"
   },
@@ -40,6 +40,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]\\tools\\emulator",
+      "-s",
+      "logs-3077\\boot_test_public_sysimage",
       "-p",
       "test_boot.*",
       "-c",
@@ -51,8 +53,8 @@
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {
-      "ANDROID_SDK_ROOT": "C:\\Program Files\\Android\\android-sdk",
-      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;C:\\Program Files\\Android\\android-sdk/tools;C:\\Program Files\\Android\\android-sdk/platform-tools"
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk",
+      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;/Users/chying/Android/android-sdk/tools;/Users/chying/Android/android-sdk/platform-tools"
     },
     "name": "Boot Test - Public System Image",
     "stderr": "/path/to/tmp/err"
@@ -66,6 +68,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]\\tools\\emulator",
+      "-s",
+      "logs-3077\\boot_test_LMP_sysimage",
       "-p",
       "test_boot.*",
       "-c",
@@ -77,8 +81,8 @@
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {
-      "ANDROID_SDK_ROOT": "C:\\Program Files\\Android\\android-sdk",
-      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;C:\\Program Files\\Android\\android-sdk/tools;C:\\Program Files\\Android\\android-sdk/platform-tools"
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk",
+      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;/Users/chying/Android/android-sdk/tools;/Users/chying/Android/android-sdk/platform-tools"
     },
     "name": "Boot Test - LMP System Image",
     "stderr": "/path/to/tmp/err"
@@ -92,6 +96,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]\\tools\\emulator",
+      "-s",
+      "logs-3077\\boot_test_MNC_sysimage",
       "-p",
       "test_boot.*",
       "-c",
@@ -103,8 +109,8 @@
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {
-      "ANDROID_SDK_ROOT": "C:\\Program Files\\Android\\android-sdk",
-      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;C:\\Program Files\\Android\\android-sdk/tools;C:\\Program Files\\Android\\android-sdk/platform-tools"
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk",
+      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;/Users/chying/Android/android-sdk/tools;/Users/chying/Android/android-sdk/platform-tools"
     },
     "name": "Boot Test - MNC System Image",
     "stderr": "/path/to/tmp/err"
@@ -118,6 +124,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]\\tools\\emulator",
+      "-s",
+      "logs-3077\\CTS_test",
       "-p",
       "test_cts.*",
       "-c",
@@ -129,11 +137,34 @@
     ],
     "cwd": "[SLAVE_BUILD]",
     "env": {
-      "ANDROID_SDK_ROOT": "C:\\Program Files\\Android\\android-sdk",
-      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;C:\\Program Files\\Android\\android-sdk/tools;C:\\Program Files\\Android\\android-sdk/platform-tools"
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk",
+      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;/Users/chying/Android/android-sdk/tools;/Users/chying/Android/android-sdk/platform-tools"
     },
     "name": "Run Emulator CTS Test",
     "stderr": "/path/to/tmp/err"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "[BUILD]\\..\\emu_test\\utils\\zip_upload_logs.py",
+      "--dir",
+      "logs-3077",
+      "--name",
+      "build-3077.zip",
+      "--ip",
+      "172.27.213.40",
+      "--user",
+      "user",
+      "--dst",
+      "/home/slave_logs/Win 7 32-bit HD 4400/"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk",
+      "PATH": "C:\\Program Files\\GnuWin32\\bin;C:\\cygwin\\bin;%(PATH)s;/Users/chying/Android/android-sdk/tools;/Users/chying/Android/android-sdk/platform-tools"
+    },
+    "name": "Zip and Upload Logs"
   },
   {
     "name": "$result",

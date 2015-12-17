@@ -29,10 +29,13 @@ class BootTestCase(EmuBaseTestCase):
         if not self.term_check(timeout=5):
             self.m_logger.debug('Second try - quit emulator by psutil')
             for x in psutil.process_iter():
-                proc = psutil.Process(x.pid)
-                # mips 64 use qemu-system-mipsel64, others emulator-[arch]
-                if "emulator" in proc.name() or "qemu-system" in proc.name():
-                    proc.kill()
+                try:
+                    proc = psutil.Process(x.pid)
+                    # mips 64 use qemu-system-mipsel64, others emulator-[arch]
+                    if "emulator" in proc.name() or "qemu-system" in proc.name():
+                        proc.kill()
+                except psutil.NoSuchProcess:
+                    pass
             result = self.term_check(timeout=10)
             self.m_logger.debug("term_check after psutil.kill - %s", result)
         self.m_logger.info("Remove AVD inside of tear down")

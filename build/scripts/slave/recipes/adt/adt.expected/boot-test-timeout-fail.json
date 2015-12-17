@@ -40,6 +40,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]/tools/emulator",
+      "-s",
+      "logs-3077/boot_test_public_sysimage",
       "-p",
       "test_boot.*",
       "-c",
@@ -71,6 +73,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]/tools/emulator",
+      "-s",
+      "logs-3077/boot_test_LMP_sysimage",
       "-p",
       "test_boot.*",
       "-c",
@@ -97,6 +101,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]/tools/emulator",
+      "-s",
+      "logs-3077/boot_test_MNC_sysimage",
       "-p",
       "test_boot.*",
       "-c",
@@ -123,6 +129,8 @@
       "INFO",
       "-exec",
       "[SLAVE_BUILD]/tools/emulator",
+      "-s",
+      "logs-3077/CTS_test",
       "-p",
       "test_cts.*",
       "-c",
@@ -141,8 +149,31 @@
     "stderr": "/path/to/tmp/err"
   },
   {
+    "cmd": [
+      "python",
+      "-u",
+      "[BUILD]/../emu_test/utils/zip_upload_logs.py",
+      "--dir",
+      "logs-3077",
+      "--name",
+      "build-3077.zip",
+      "--ip",
+      "172.27.213.40",
+      "--user",
+      "user",
+      "--dst",
+      "/home/slave_logs/Ubuntu 15.04 Quadro K600/"
+    ],
+    "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "ANDROID_SDK_ROOT": "/Users/chying/Android/android-sdk-linux",
+      "PATH": "%(PATH)s:/Users/chying/Android/android-sdk-linux/tools:/Users/chying/Android/android-sdk-linux/platform-tools"
+    },
+    "name": "Zip and Upload Logs"
+  },
+  {
     "name": "$result",
-    "reason": "1 out of 4 aggregated steps failed. Failures: Step('Boot Test - Public System Image') failed with return_code 1",
+    "reason": "1 out of 5 aggregated steps failed. Failures: Step('Boot Test - Public System Image') failed with return_code 1",
     "status_code": 1
   }
 ]

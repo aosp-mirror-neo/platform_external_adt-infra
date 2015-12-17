@@ -69,6 +69,9 @@ def RunSteps(api):
   script_root = api.path.join(build_dir, os.pardir, 'emu_test')
   dotest_path = api.path.join(script_root, 'dotest.py')
   image_util_path = api.path.join(script_root, 'utils', 'download_unzip_image.py')
+  buildnum = api.properties['buildnumber']
+  log_util_path = api.path.join(script_root, 'utils', 'zip_upload_logs.py')
+  log_dir = 'logs-%s' % buildnum
 
   try:
     api.step('Clean slave build directory',
@@ -86,10 +89,12 @@ def RunSteps(api):
               '--user', MASTER_USER],
              env=env)
   def PythonTestStep(description,
+                     session_dir,
                      test_pattern,
                      cfg_file, cfg_filter):
     deferred_step_result = api.python(description, dotest_path,
                                       ['-l', 'INFO', '-exec', emulator_path,
+                                       '-s', session_dir,
                                        '-p', test_pattern,
                                        '-c', api.path.join(script_root, 'config', cfg_file),
                                        '-n', buildername,
@@ -112,24 +117,35 @@ def RunSteps(api):
     # build triggered by emu poller
     if project == "emu-master-dev":
       PythonTestStep('Boot Test - Public System Image',
+                     api.path.join(log_dir, 'boot_test_public_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
                      '{"tot_image": "no"}')
     # At least one of the system images are available
     if str(api.properties['lmp_revision']) != 'None' and project in ['git_lmp-mr1-emu-dev', 'emu-master-dev']:
       PythonTestStep('Boot Test - LMP System Image',
+                     api.path.join(log_dir, 'boot_test_LMP_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
                      '{"tot_image": "yes", "api": "22"}')
     if str(api.properties['mnc_revision']) != 'None' and project in ['git_mnc-emu-dev', 'emu-master-dev']:
       PythonTestStep('Boot Test - MNC System Image',
+                     api.path.join(log_dir, 'boot_test_MNC_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
                      '{"tot_image": "yes", "api": "23"}')
     PythonTestStep('Run Emulator CTS Test',
+                   api.path.join(log_dir, 'CTS_test'),
                    'test_cts.*',
                    'cts_cfg.csv',
                    '{"tot_image": "no"}')
+    api.python("Zip and Upload Logs", log_util_path,
+               ['--dir', log_dir,
+                '--name', 'build-%s.zip' % buildnum,
+                '--ip', MASTER_IP,
+                '--user', MASTER_USER,
+                '--dst', '%s%s/'% (api.properties['logs_dir'], buildername)],
+                env=env)
 
 def GenTests(api):
   yield (
@@ -145,6 +161,8 @@ def GenTests(api):
       emulator_image='/images/emu_gspoller_windows/sdk-repo-windows-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     )
   )
 
@@ -161,6 +179,8 @@ def GenTests(api):
       emulator_image='/images/emu/sdk-repo-windows-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     )
   )
 
@@ -176,6 +196,8 @@ def GenTests(api):
       emulator_image='/images/emu/sdk-repo-mac-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     )
   )
 
@@ -191,6 +213,8 @@ def GenTests(api):
       emulator_image='/images/emu/sdk-repo-linux-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     )
   )
 
@@ -206,6 +230,8 @@ def GenTests(api):
       emulator_image='/images/emu/sdk-repo-linux-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     )
   )
 
@@ -221,6 +247,8 @@ def GenTests(api):
       emulator_image='/images/emu/sdk-repo-linux-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     )
   )
 
@@ -236,6 +264,8 @@ def GenTests(api):
       emulator_image='/images/emu_gspoller_linux/sdk-repo-windows-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     ) +
     api.override_step_data('Boot Test - Public System Image',
                            api.raw_io.stream_output('TIMEOUT: foobar', 'stderr')
@@ -255,6 +285,8 @@ def GenTests(api):
       emulator_image='/images/emu_gspoller_linux/sdk-repo-windows-tools-2344972.zip',
       lmp_system_image='/images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2460722.zip,images/git_lmp-mr1-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2460722.zip',
       mnc_system_image='/images/git_mnc-emu-dev-linux-sdk_google_phone_x86_64-sdk_addon/sdk-repo-linux-system-images-2458059.zip,/images/git_mnc-emu-dev-linux-sdk_google_phone_x86-sdk_addon/sdk-repo-linux-system-images-2458059.zip',
+      logs_dir='/home/slave_logs/',
+      buildnumber='3077',
     ) +
     api.override_step_data('Run Emulator CTS Test',
                            api.raw_io.stream_output('TIMEOUT: foobar', 'stderr')

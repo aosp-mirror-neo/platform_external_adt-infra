@@ -126,10 +126,13 @@ class EmuBaseTestCase(LoggedTestCase):
 
         def find_emu_proc():
             for proc in psutil.process_iter():
-                if proc.name() != "emulator.exe" and "crash-service" not in proc.name() and ("emulator" in proc.name() or "qemu-system" in proc.name()):
-                    self.m_logger.debug("Found - %s, pid - %d, status - %s", proc.name(), proc.pid, proc.status())
-                    if proc.status() != psutil.STATUS_ZOMBIE:
-                        return proc
+                try:
+                    if proc.name() != "emulator.exe" and "crash-service" not in proc.name() and ("emulator" in proc.name() or "qemu-system" in proc.name()):
+                        self.m_logger.debug("Found - %s, pid - %d, status - %s", proc.name(), proc.pid, proc.status())
+                        if proc.status() != psutil.STATUS_ZOMBIE:
+                            return proc
+                except psutil.NoSuchProcess:
+                    pass
             return None
 
         self.m_logger.info('Launching AVD, cmd: %s', ' '.join(launch_cmd))
