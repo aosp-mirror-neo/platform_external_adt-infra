@@ -34,7 +34,6 @@ def RunSteps(api):
   emulator_path = download_path.join('tools', 'emulator')
 
   env_path = ['%(PATH)s']
-  find_cmd = 'find'
 
   # find android sdk root directory
   home_dir = os.path.expanduser('~')
@@ -52,7 +51,6 @@ def RunSteps(api):
       gnu_path = 'C:\\Program Files\\GnuWin32\\bin'
       cygwin_path = 'C:\\cygwin\\bin'
     env_path = [gnu_path, cygwin_path] + env_path
-    find_cmd = '%s\\find' % cygwin_path
   else:
     raise # pragma: no cover
 
@@ -71,12 +69,13 @@ def RunSteps(api):
   image_util_path = api.path.join(script_root, 'utils', 'download_unzip_image.py')
   buildnum = api.properties['buildnumber']
   log_util_path = api.path.join(script_root, 'utils', 'zip_upload_logs.py')
+  init_bot_util_path = api.path.join(script_root, 'utils', 'emu_bot_init.py')
   log_dir = 'logs-%s' % buildnum
 
   try:
-    api.step('Clean slave build directory',
-             [find_cmd, '.', '-delete'],
-             env=env)
+    api.python('Clean up bot', init_bot_util_path,
+               ['--build-dir', api.path['slave_build']],
+               env=env)
   except api.step.StepFailure as f: # pragma: no cover
     # Not able to delete some files, it won't be the fault of emulator
     # not a stopper to run actual tests

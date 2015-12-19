@@ -139,8 +139,28 @@ class EmuBaseTestCase(LoggedTestCase):
         t_launch = threading.Thread(target=launch_in_thread)
         t_launch.start()
         time.sleep(5)
-        if find_emu_proc() is None:
+        if self.start_proc.poll() or not find_emu_proc():
             raise LaunchError(str(avd))
+
+    def run_with_timeout(self, cmd, timeout):
+        vars = {'output': "",
+                'err': "",
+                'process': None}
+
+        def run_cmd():
+            vars['process'] = psutil.Popen(cmd, stdout=PIPE, stderr=PIPE)
+            (vars['output'], vars['err']) = vars['process'].communicate()
+            self.m_logger.info('command output - %s %s', vars['output'], vars['err'])
+
+        thread = threading.Thread(target=run_cmd)
+        thread.start()
+
+        thread.join(timeout)
+        if thread.is_alive():
+            self.m_logger.info('cmd %s timeout, force terminate', ' '.join(cmd))
+            vars['process'].terminate()
+        thread.join()
+        return vars['process'].returncode, vars['output'], vars['err']
 
     def launch_emu_and_wait(self, avd):
         """Launch given avd and wait for boot completion, return boot time"""
@@ -148,9 +168,8 @@ class EmuBaseTestCase(LoggedTestCase):
         self.launch_emu(avd)
         completed = "0"
         while time.time()-start_time < emu_args.timeout_in_seconds:
-            process = psutil.Popen(["adb", "shell", "getprop", "sys.boot_completed"], stdout=PIPE, stderr=PIPE)
-            (output, err) = process.communicate()
-            exit_code = process.wait()
+            cmd = ["adb", "shell", "getprop", "sys.boot_completed"]
+            (exit_code, output, err) = self.run_with_timeout(cmd, 5)
             self.m_logger.debug('AVD %s, %s %s', avd, output, err)
             if exit_code is 0:
                 completed = output.strip()
