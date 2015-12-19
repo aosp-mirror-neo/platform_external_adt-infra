@@ -138,7 +138,10 @@ class EmuBaseTestCase(LoggedTestCase):
         self.m_logger.info('Launching AVD, cmd: %s', ' '.join(launch_cmd))
         t_launch = threading.Thread(target=launch_in_thread)
         t_launch.start()
-        time.sleep(5)
+        # TODO: decrease the wait time
+        # It is noticed that it takes ~10 seconds for process to quit in some failiure cases
+        # But if the boot up time improves to be under 15 seconds, we will need to fine tune this wait time
+        time.sleep(15)
         if self.start_proc.poll() or not find_emu_proc():
             raise LaunchError(str(avd))
 
