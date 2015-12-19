@@ -150,7 +150,6 @@ class EmuBaseTestCase(LoggedTestCase):
         def run_cmd():
             vars['process'] = psutil.Popen(cmd, stdout=PIPE, stderr=PIPE)
             (vars['output'], vars['err']) = vars['process'].communicate()
-            self.m_logger.info('command output - %s %s', vars['output'], vars['err'])
 
         thread = threading.Thread(target=run_cmd)
         thread.start()
