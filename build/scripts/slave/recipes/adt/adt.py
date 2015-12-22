@@ -68,9 +68,10 @@ def RunSteps(api):
   dotest_path = api.path.join(script_root, 'dotest.py')
   image_util_path = api.path.join(script_root, 'utils', 'download_unzip_image.py')
   buildnum = api.properties['buildnumber']
+  rev = api.properties['got_revision']
   log_util_path = api.path.join(script_root, 'utils', 'zip_upload_logs.py')
   init_bot_util_path = api.path.join(script_root, 'utils', 'emu_bot_init.py')
-  log_dir = 'logs-%s' % buildnum
+  log_dir = 'logs-build_%s-rev_%s' % (buildnum, rev)
 
   try:
     api.python('Clean up bot', init_bot_util_path,
@@ -140,7 +141,7 @@ def RunSteps(api):
                    '{"tot_image": "no"}')
     api.python("Zip and Upload Logs", log_util_path,
                ['--dir', log_dir,
-                '--name', 'build-%s.zip' % buildnum,
+                '--name', 'build_%s-rev_%s.zip' % (buildnum, rev),
                 '--ip', MASTER_IP,
                 '--user', MASTER_USER,
                 '--dst', '%s%s/'% (api.properties['logs_dir'], buildername)],
