@@ -1,6 +1,7 @@
 import os
 import argparse
 import subprocess
+import psutil
 
 parser = argparse.ArgumentParser(description='Download and unzip a list of files separated by comma')
 parser.add_argument('--file', dest='remote_file_list', action='store',
@@ -34,7 +35,20 @@ def get_dst_dir(remote_path):
   else:
     return None
 
+def clean_emu_proc():
+  print 'clean up any emulator process'
+  for x in psutil.process_iter():
+    try:
+      proc = psutil.Process(x.pid)
+      # mips 64 use qemu-system-mipsel64, others emulator-[arch]
+      if "emulator" in proc.name() or "qemu-system" in proc.name():
+        print "trying to kill - %s, pid - %d, status - %s" % (proc.name(), proc.pid, proc.status())
+        proc.kill()
+    except:
+      pass
+
 def download_and_unzip():
+  clean_emu_proc()
   file_list = args.remote_file_list.split(',')
   dst_dir = get_dst_dir(file_list[0])
 
