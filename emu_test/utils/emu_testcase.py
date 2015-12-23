@@ -95,16 +95,22 @@ class EmuBaseTestCase(LoggedTestCase):
     def term_check(self, timeout):
         """Check if emulator process has terminated, return True if terminated else False"""
         for x in range(timeout):
-            term = True
-            for proc in psutil.process_iter():
-                if "emulator" in proc.name() or "qemu-system" in proc.name():
+            time.sleep(1)
+            if self.find_emu_proc() is None:
+                return True
+        return False
+
+    def find_emu_proc(self):
+        """Return the first active emulator process, None if not found"""
+        for proc in psutil.process_iter():
+            try:
+                if proc.name() != "emulator.exe" and "crash-service" not in proc.name() and ("emulator" in proc.name() or "qemu-system" in proc.name()):
                     self.m_logger.debug("Found - %s, pid - %d, status - %s", proc.name(), proc.pid, proc.status())
                     if proc.status() != psutil.STATUS_ZOMBIE:
-                        time.sleep(1)
-                        term = False
-            if term:
-                break
-        return term
+                        return proc
+            except psutil.NoSuchProcess:
+                pass
+        return None
 
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
@@ -124,17 +130,6 @@ class EmuBaseTestCase(LoggedTestCase):
                 else:
                     self.m_logger.debug(line)
 
-        def find_emu_proc():
-            for proc in psutil.process_iter():
-                try:
-                    if proc.name() != "emulator.exe" and "crash-service" not in proc.name() and ("emulator" in proc.name() or "qemu-system" in proc.name()):
-                        self.m_logger.debug("Found - %s, pid - %d, status - %s", proc.name(), proc.pid, proc.status())
-                        if proc.status() != psutil.STATUS_ZOMBIE:
-                            return proc
-                except psutil.NoSuchProcess:
-                    pass
-            return None
-
         self.m_logger.info('Launching AVD, cmd: %s', ' '.join(launch_cmd))
         t_launch = threading.Thread(target=launch_in_thread)
         t_launch.start()
@@ -142,7 +137,7 @@ class EmuBaseTestCase(LoggedTestCase):
         # It is noticed that it takes ~10 seconds for process to quit in some failiure cases
         # But if the boot up time improves to be under 15 seconds, we will need to fine tune this wait time
         time.sleep(15)
-        if self.start_proc.poll() or not find_emu_proc():
+        if self.start_proc.poll() or not self.find_emu_proc():
             raise LaunchError(str(avd))
 
     def run_with_timeout(self, cmd, timeout):
