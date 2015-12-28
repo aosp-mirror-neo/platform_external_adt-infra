@@ -155,8 +155,11 @@ class EmuBaseTestCase(LoggedTestCase):
         thread.join(timeout)
         if thread.is_alive():
             self.m_logger.info('cmd %s timeout, force terminate', ' '.join(cmd))
-            vars['process'].terminate()
-        thread.join()
+            try:
+                vars['process'].terminate()
+            except Exception as e:
+                self.m_logger.error('exception terminate adb getprop process: %r', e)
+        thread.join(timeout)
         return vars['process'].returncode, vars['output'], vars['err']
 
     def launch_emu_and_wait(self, avd):
@@ -166,7 +169,7 @@ class EmuBaseTestCase(LoggedTestCase):
         completed = "0"
         while time.time()-start_time < emu_args.timeout_in_seconds:
             cmd = ["adb", "shell", "getprop", "sys.boot_completed"]
-            (exit_code, output, err) = self.run_with_timeout(cmd, 5)
+            (exit_code, output, err) = self.run_with_timeout(cmd, 10)
             self.m_logger.debug('AVD %s, %s %s', avd, output, err)
             if exit_code is 0:
                 completed = output.strip()
