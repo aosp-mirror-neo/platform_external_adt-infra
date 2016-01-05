@@ -169,7 +169,11 @@ class EmuBaseTestCase(LoggedTestCase):
         completed = "0"
         while time.time()-start_time < emu_args.timeout_in_seconds:
             cmd = ["adb", "shell", "getprop", "sys.boot_completed"]
-            (exit_code, output, err) = self.run_with_timeout(cmd, 10)
+            try:
+                (exit_code, output, err) = self.run_with_timeout(cmd, 10)
+            except Exception as e:
+                self.m_logger.error('exception run_with_timeout adb getprop: %r', e)
+                continue
             self.m_logger.debug('AVD %s, %s %s', avd, output, err)
             if exit_code is 0:
                 completed = output.strip()
