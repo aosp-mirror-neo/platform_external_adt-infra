@@ -79,7 +79,7 @@ class CTSTestCase(EmuBaseTestCase):
             pass_count, fail_count, skip_count = re.match(result_re, result_line).groups()
             self.m_logger.info("Pass: %s, Fail: %s, Not Executed: %s", pass_count, fail_count, skip_count)
             self.assertEqual(fail_count, '0')
-        else
+        else:
             self.assertEqual('NA', '0')
 
 def create_test_case_for_avds():

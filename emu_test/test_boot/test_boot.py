@@ -27,8 +27,8 @@ class BootTestCase(EmuBaseTestCase):
                     proc = psutil.Process(x.pid)
                     # mips 64 use qemu-system-mipsel64, others emulator-[arch]
                     if any([x in proc.name() for x in proc_names]):
-                        self.m_logger.info("kill_proc_by_name - %s, %s" % (proc.name(), proc.status()))
                         if proc.status() != psutil.STATUS_ZOMBIE:
+                            self.m_logger.info("kill_proc_by_name - %s, %s" % (proc.name(), proc.status()))
                             proc.kill()
                 except psutil.NoSuchProcess:
                     pass
