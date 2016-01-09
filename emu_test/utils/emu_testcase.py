@@ -9,6 +9,8 @@ import unittest
 import logging
 import time
 import psutil
+import csv
+import platform
 import threading
 from emu_error import *
 from emu_argparser import emu_args
@@ -16,15 +18,15 @@ from subprocess import PIPE, STDOUT
 from collections import namedtuple
 from ConfigParser import ConfigParser
 
-class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu, tot_image, ranchu, port')):
+class AVDConfig(namedtuple('AVDConfig', 'api, tag, abi, device, ram, gpu, tot_image, ranchu, port, cts')):
     __slots__ = ()
     def __str__(self):
         device = self.device if self.device != '' else 'defdev'
         for ch in [' ', '(', ')']:
             device = device.replace(ch, '_')
-        return str("%s-%s-%s-%s-gpu_%s-api%s" % (self.tag, self.abi,
+        return str("%s-%s-%s-%s-gpu_%s-api%s%s" % (self.tag, self.abi,
                                                  device, self.ram, self.gpu,
-                                                 self.api))
+                                                 self.api, "-CTS" if self.cts else ""))
     def name(self):
         return str(self)
 class LoggedTestCase(unittest.TestCase):
@@ -84,6 +86,7 @@ class EmuBaseTestCase(LoggedTestCase):
     """
     def __init__(self, *args, **kwargs):
         super(EmuBaseTestCase, self).__init__(*args, **kwargs)
+        self.boot_time = 0
 
     @classmethod
     def setUpClass(cls):
@@ -183,11 +186,12 @@ class EmuBaseTestCase(LoggedTestCase):
         if completed is not "1":
             self.m_logger.info('command output - %s %s', output, err)
             self.m_logger.error('AVD %s didn\'t boot up within %s seconds', avd, emu_args.timeout_in_seconds)
+            self.boot_time = -1
             raise TimeoutError(avd, emu_args.timeout_in_seconds)
-        boot_time = time.time() - start_time
-        self.m_logger.info('AVD %s, boot time is %s', avd, boot_time)
+        self.boot_time = time.time() - start_time
+        self.m_logger.info('AVD %s, boot time is %s', avd, self.boot_time)
 
-        return boot_time
+        return self.boot_time
 
     def update_config(self, avd_config):
         # avd should be found $HOME/.android/avd/
@@ -317,3 +321,75 @@ class EmuBaseTestCase(LoggedTestCase):
         self.simple_logger.debug(err)
         self.m_logger.debug('return value of update proc: %s', update_proc.poll())
         return update_proc.poll()
+
+def create_test_case_from_file(desc, testcase_class, test_func):
+    """ Create test case based on test configuration file. """
+
+    def get_port():
+        if not hasattr(get_port, '_port'):
+            get_port._port = 5552
+        get_port._port += 2
+        return str(get_port._port)
+
+    def valid_case(avd_config):
+        if emu_args.filter_dict is not None:
+            for key, value in emu_args.filter_dict.iteritems():
+                if getattr(avd_config, key) != value:
+                    return False
+        return True
+
+    def create_test_case(avd_config, op):
+        if op == "S" or op == "" or not valid_case(avd_config):
+            return
+
+        func = lambda self: test_func(self, avd_config)
+        if op == "X":
+            func = unittest.expectedFailure(func)
+        # TODO: handle flakey tests
+        elif op == "F":
+            func = func
+        qemu_str = "_qemu2" if avd_config.ranchu == "yes" else ""
+        setattr(testcase_class, "test_%s_%s%s" % (desc, str(avd_config), qemu_str), func)
+
+    with open(emu_args.config_file, "rb") as file:
+        reader = csv.reader(file)
+        for row in reader:
+            #skip the first line
+            if reader.line_num == 1:
+                continue
+            if reader.line_num == 2:
+                builder_idx = row.index(emu_args.builder_name)
+            else:
+                if(row[0].strip() != ""):
+                    api = row[0].split("API", 1)[1].strip()
+                if(row[1].strip() != ""):
+                    tag = row[1].strip()
+                if(row[2].strip() != ""):
+                    abi = row[2].strip()
+
+                # P - config should be passing
+                # X - config is expected to fail
+                # S and everything else - Skip this config
+                op = row[builder_idx].strip().upper()
+                if op in ["P", "X", "F"]:
+                    device = row[3]
+                    if row[4] != "":
+                        ram = row[4]
+                    else:
+                        ram = "512" if device == "" else "1536"
+                    if row[5] != "":
+                        gpu = row[5]
+                    else:
+                        gpu = "yes" if api > "15" else "no"
+                    # For 32 bit machine, ram should be less than 768MB
+                    if not platform.machine().endswith('64'):
+                        ram = str(min([int(ram), 768]))
+                    if api < "22" and row[6] == "yes":
+                        raise ConfigError()
+                    tot_image = row[6] if row[6] == "yes" else "no"
+                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="no", port=get_port(), cts=False)
+                    create_test_case(avd_config, op)
+                    # for unreleased images, test with qemu2 in addition
+                    if tot_image == "yes":
+                        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="yes", port=get_port(), cts=False)
+                        create_test_case(avd_config, op)

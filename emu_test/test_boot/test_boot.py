@@ -2,21 +2,19 @@
 
 import unittest
 import os
-import platform
 import time
 import psutil
-import csv
 import shutil
 
 from utils.emu_error import *
 from utils.emu_argparser import emu_args
+import utils.emu_testcase
 from utils.emu_testcase import EmuBaseTestCase, AVDConfig
 
 class BootTestCase(EmuBaseTestCase):
     def __init__(self, *args, **kwargs):
         super(BootTestCase, self).__init__(*args, **kwargs)
         self.avd_config = None
-
     @classmethod
     def setUpClass(cls):
         super(BootTestCase, cls).setUpClass()
@@ -29,8 +27,9 @@ class BootTestCase(EmuBaseTestCase):
                     proc = psutil.Process(x.pid)
                     # mips 64 use qemu-system-mipsel64, others emulator-[arch]
                     if any([x in proc.name() for x in proc_names]):
-                        self.m_logger.info("kill_proc_by_name - %s" % proc.name())
-                        proc.kill()
+                        self.m_logger.info("kill_proc_by_name - %s, %s" % (proc.name(), proc.status()))
+                        if proc.status() != psutil.STATUS_ZOMBIE:
+                            proc.kill()
                 except psutil.NoSuchProcess:
                     pass
 
@@ -54,86 +53,15 @@ class BootTestCase(EmuBaseTestCase):
             pass
 
     def boot_check(self, avd):
-        boot_time = self.launch_emu_and_wait(avd)
-        self.m_logger.info('AVD %s, boot time: %s, expected time: %s', avd, boot_time, emu_args.expected_boot_time)
-        self.assertLessEqual(boot_time, emu_args.expected_boot_time)
+        self.boot_time = self.launch_emu_and_wait(avd)
+        self.m_logger.info('AVD %s, boot time: %s, expected time: %s', avd, self.boot_time, emu_args.expected_boot_time)
+        self.assertLessEqual(self.boot_time, emu_args.expected_boot_time)
 
     def run_boot_test(self, avd_config):
         self.avd_config = avd_config
         self.assertEqual(self.create_avd(avd_config), 0)
         self.boot_check(avd_config)
 
-def get_port():
-    if not hasattr(get_port, '_port'):
-        get_port._port = 5552
-    get_port._port += 2
-    return str(get_port._port)
-
-def create_test_case_from_file():
-    """ Create test case based on test configuration file. """
-
-    def valid_case(avd_config):
-        if emu_args.filter_dict is not None:
-            for key, value in emu_args.filter_dict.iteritems():
-                if getattr(avd_config, key) != value:
-                    return False
-        return True
-
-    def create_test_case(avd_config, op):
-        if op == "S" or op == "" or not valid_case(avd_config):
-            return
-
-        func = lambda self: self.run_boot_test(avd_config)
-        if op == "X":
-            func = unittest.expectedFailure(func)
-        # TODO: handle flakey tests
-        elif op == "F":
-            func = func
-        qemu_str = "_qemu2" if avd_config.ranchu == "yes" else ""
-        setattr(BootTestCase, "test_boot_%s%s" % (str(avd_config), qemu_str), func)
-
-    with open(emu_args.config_file, "rb") as file:
-        reader = csv.reader(file)
-        for row in reader:
-            #skip the first line
-            if reader.line_num == 1:
-                continue
-            if reader.line_num == 2:
-                builder_idx = row.index(emu_args.builder_name)
-            else:
-                if(row[0].strip() != ""):
-                    api = row[0].split("API", 1)[1].strip()
-                if(row[1].strip() != ""):
-                    tag = row[1].strip()
-                if(row[2].strip() != ""):
-                    abi = row[2].strip()
-
-                # P - config should be passing
-                # X - config is expected to fail
-                # S and everything else - Skip this config
-                op = row[builder_idx].strip().upper()
-                if op in ["P", "X", "F"]:
-                    device = row[3]
-                    if row[4] != "":
-                        ram = row[4]
-                    else:
-                        ram = "512" if device == "" else "1536"
-                    if row[5] != "":
-                        gpu = row[5]
-                    else:
-                        gpu = "yes" if api > "15" else "no"
-                    # For 32 bit machine, ram should be less than 768MB
-                    if not platform.machine().endswith('64'):
-                        ram = str(min([int(ram), 768]))
-                    if api < "22" and row[6] == "yes":
-                        raise ConfigError()
-                    tot_image = row[6] if row[6] == "yes" else "no"
-                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="no", port=get_port())
-                    create_test_case(avd_config, op)
-                    # for unreleased images, test with qemu2 in addition
-                    if tot_image == "yes":
-                        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, tot_image, ranchu="yes", port=get_port())
-                        create_test_case(avd_config, op)
 
 def create_test_case_for_avds():
     avd_list = emu_args.avd_list
@@ -145,7 +73,7 @@ def create_test_case_for_avds():
 if emu_args.config_file is None:
     create_test_case_for_avds()
 else:
-    create_test_case_from_file()
+    utils.emu_testcase.create_test_case_from_file("boot", BootTestCase, BootTestCase.run_boot_test)
 
 if __name__ == '__main__':
     os.environ["SHELL"] = "/bin/bash"

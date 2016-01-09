@@ -5,12 +5,13 @@ import unittest
 import time
 import psutil
 import re
-from subprocess import PIPE
+import threading
+from subprocess import PIPE,STDOUT
 
 from utils.emu_error import *
 from utils.emu_argparser import emu_args
-from utils.emu_testcase import EmuBaseTestCase
-
+from utils.emu_testcase import EmuBaseTestCase, AVDConfig
+import utils.emu_testcase
 api_to_android_version = {"23": "6.0",
                           "22": "5.1",
                           "21": "5.0",
@@ -48,46 +49,59 @@ class CTSTestCase(EmuBaseTestCase):
 
     def get_cts_exec(self, avd):
         home_dir = os.path.expanduser('~')
-        host = platform.system()
-        if host == "Darwin" or host == "Linux":
-            cts_home = os.path.join(home_dir, 'Android/CTS')
-        elif host == "Windows":
-            cts_home = 'C:\\CTS'
-        # expected avd name [arch]-[api]-[CTS]
-        name_pattern = re.compile("^(.*)-(.*)-CTS$")
-        res = re.match(name_pattern, avd)
-        assert res is not None
-        arch = res.group(1)
-        api = res.group(2)
-        cts_dir = "%s-%s" % (api_to_android_version[api], arch)
+        cts_home = os.path.join(home_dir, 'Android', 'CTS')
+        cts_dir = "%s-%s" % (api_to_android_version[avd.api], avd.abi)
         return os.path.join(cts_home, cts_dir, 'android-cts', 'tools', 'cts-tradefed')
 
     def run_cts_plan(self, avd, plan):
         result_re = re.compile("^.*XML test result file generated at .*Passed ([0-9]+), Failed ([0-9]+), Not Executed ([0-9]+)")
         result_line = ""
+        #self.assertEqual(self.create_avd(avd), 0)
         self.launch_emu_and_wait(avd)
+
         exec_path = self.get_cts_exec(avd)
-        cts_proc = psutil.Popen([exec_path, "run", "cts", "--plan", plan, "--disable-reboot"], stdout=PIPE, stderr=PIPE)
-        self.m_logger.debug("CTS process poll %s", cts_proc.poll())
-        while cts_proc.poll() is None:
-            line = cts_proc.stdout.readline()
-            self.simple_logger.info(line)
-            if re.match(result_re, line):
-                result_line = line
-        if result_line is not "":
-            pass_count = re.match(result_re, result_line).group(1)
-            fail_count = re.match(result_re, result_line).group(2)
-            self.assertNotEqual(pass_count, '0')
+        cst_cmd = [exec_path, "run", "cts", "--plan", plan, "--disable-reboot"]
+        def launch_in_thread():
+            self.m_logger.info('executable path: ' + exec_path)
+            cts_proc = psutil.Popen(cst_cmd, stdout=PIPE, stderr=STDOUT)
+            lines_iterator = iter(cts_proc.stdout.readline, b"")
+            for line in lines_iterator:
+                self.simple_logger.info(line)
+                if re.match(result_re, line):
+                    result_line = line
+
+        self.m_logger.info('Launching cts-tradefed, cmd: %s', ' '.join(cst_cmd))
+        t_launch = threading.Thread(target=launch_in_thread)
+        t_launch.start()
+        t_launch.join()
+
+        if result_line != "":
+            pass_count, fail_count, skip_count = re.match(result_re, result_line).groups()
+            self.m_logger.info("Pass: %s, Fail: %s, Not Executed: %s", pass_count, fail_count, skip_count)
             self.assertEqual(fail_count, '0')
-        self.m_logger.debug("CTS process poll %s", cts_proc.poll())
+        else
+            self.assertEqual('NA', '0')
 
 def create_test_case_for_avds():
-    avd_list = emu_args.avd_list
-    for avd in avd_list:
-        def fn(i, plan):
-            return lambda self: self.run_cts_plan(i, plan)
-        if "CTS" in avd:
-            setattr(CTSTestCase, "test_cts_Short_%s" % avd, fn(avd, "Short"))
+    avd_name_re = re.compile("([^-]*)-(.*)-(.*)-(\d+)-gpu_(.*)-api(\d+)-CTS")
+    def create_avd_from_name(avd_str):
+        res = avd_name_re.match(avd_str)
+        assert res is not None
+        tag, abi, device, ram, gpu, api = avd_name_re.match(avd_str).groups()
+        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, "yes", ranchu="no", port="", cts=True)
+        return avd_config
+
+    def fn(avd_name, plan):
+        #return lambda self: self.run_cts_plan(create_avd_from_name(avd_name), plan)
+        return lambda self: self.run_cts_plan(create_avd_from_name(avd_name), plan)
+
+    for avd in emu_args.avd_list:
+        if avd_name_re.match(avd):
+            setattr(CTSTestCase, "test_cts_%s" % avd, fn(avd, "CTS"))
+
+# TODO: create test case based on config file. Since we need to do some pre-work to run CTS, use static AVD at this time for simplicity.
+create_test_case_for_avds()
+#utils.emu_testcase.create_test_case_from_file("cts", CTSTestCase, CTSTestCase.run_cts_plan)
 
 create_test_case_for_avds()
 if __name__ == '__main__':
