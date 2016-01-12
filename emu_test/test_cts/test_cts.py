@@ -33,19 +33,31 @@ class CTSTestCase(EmuBaseTestCase):
         self.m_logger.info('Running - %s', self._testMethodName)
 
     def tearDown(self):
-        self.m_logger.debug('First try - quit emulator by adb emu kill')
-        kill_proc = psutil.Popen(["adb", "emu", "kill"], stdout=PIPE, stderr=PIPE)
+        def kill_proc_by_name(proc_names):
+            for x in psutil.process_iter():
+                try:
+                    proc = psutil.Process(x.pid)
+                    # mips 64 use qemu-system-mipsel64, others emulator-[arch]
+                    if any([x in proc.name() for x in proc_names]):
+                        if proc.status() != psutil.STATUS_ZOMBIE:
+                            self.m_logger.info("kill_proc_by_name - %s, %s" % (proc.name(), proc.status()))
+                            proc.kill()
+                except psutil.NoSuchProcess:
+                    pass
 
+        self.m_logger.debug('First try - quit emulator by adb emu kill')
+        kill_proc = psutil.Popen(["adb", "emu", "kill"])
         # check emulator process is terminated
         if not self.term_check(timeout=10):
             self.m_logger.debug('Second try - quit emulator by psutil')
-            for x in psutil.process_iter():
-                proc = psutil.Process(x.pid)
-                # mips 64 use qemu-system-mipsel64, others emulator-[arch]
-                if "emulator" in proc.name() or "qemu-system" in proc.name():
-                    proc.kill()
+            kill_proc_by_name(["emulator", "qemu-system"])
             result = self.term_check(timeout=10)
             self.m_logger.debug("term_check after psutil.kill - %s", result)
+        try:
+            kill_proc_by_name(["crash-service"])
+            psutil.Popen(["adb", "kill-server"])
+        except:
+            pass
 
     def get_cts_exec(self, avd):
         home_dir = os.path.expanduser('~')
@@ -55,28 +67,37 @@ class CTSTestCase(EmuBaseTestCase):
 
     def run_cts_plan(self, avd, plan):
         result_re = re.compile("^.*XML test result file generated at .*Passed ([0-9]+), Failed ([0-9]+), Not Executed ([0-9]+)")
-        result_line = ""
         #self.assertEqual(self.create_avd(avd), 0)
         self.launch_emu_and_wait(avd)
 
         exec_path = self.get_cts_exec(avd)
         cst_cmd = [exec_path, "run", "cts", "--plan", plan, "--disable-reboot"]
+        # use "script -c" to force message flush, not available on Windows
+        if platform.system() in ["Linux", "Darwin"]:
+            cst_cmd = ["script", "-c", " ".join(cst_cmd)]
+
+        vars = {'result_line': "",
+                'cts_proc': None}
+
         def launch_in_thread():
+
             self.m_logger.info('executable path: ' + exec_path)
-            cts_proc = psutil.Popen(cst_cmd, stdout=PIPE, stderr=STDOUT)
-            lines_iterator = iter(cts_proc.stdout.readline, b"")
+            vars['cts_proc'] = psutil.Popen(cst_cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+            lines_iterator = iter(vars['cts_proc'].stdout.readline, b"")
             for line in lines_iterator:
                 self.simple_logger.info(line)
                 if re.match(result_re, line):
-                    result_line = line
+                    vars['result_line'] = line
+                    self.m_logger.info("Send exit to cts_proc")
+                    vars['cts_proc'].stdin.write('exit\n')
 
         self.m_logger.info('Launching cts-tradefed, cmd: %s', ' '.join(cst_cmd))
         t_launch = threading.Thread(target=launch_in_thread)
         t_launch.start()
         t_launch.join()
 
-        if result_line != "":
-            pass_count, fail_count, skip_count = re.match(result_re, result_line).groups()
+        if vars['result_line'] != "":
+            pass_count, fail_count, skip_count = re.match(result_re, vars['result_line']).groups()
             self.m_logger.info("Pass: %s, Fail: %s, Not Executed: %s", pass_count, fail_count, skip_count)
             self.assertEqual(fail_count, '0')
         else:
