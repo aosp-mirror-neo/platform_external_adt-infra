@@ -36,7 +36,8 @@ class BootTestCase(EmuBaseTestCase):
         self.m_logger.debug('First try - quit emulator by adb emu kill')
         kill_proc = psutil.Popen(["adb", "emu", "kill"])
         # check emulator process is terminated
-        if not self.term_check(timeout=5):
+        result = self.term_check(timeout=5)
+        if not result:
             self.m_logger.debug('Second try - quit emulator by psutil')
             kill_proc_by_name(["emulator", "qemu-system"])
             result = self.term_check(timeout=10)
@@ -45,6 +46,8 @@ class BootTestCase(EmuBaseTestCase):
         # avd should be found $HOME/.android/avd/
         avd_dir = os.path.join(os.path.expanduser('~'), '.android', 'avd')
         try:
+            if result:
+                self.start_proc.wait()
             kill_proc_by_name(["crash-service"])
             psutil.Popen(["adb", "kill-server"])
             os.remove(os.path.join(avd_dir, '%s.ini' % self.avd_config.name()))

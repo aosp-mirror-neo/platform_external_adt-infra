@@ -56,7 +56,8 @@ def RunSteps(api):
 
   android_tools_dir = os.path.join(android_sdk_home, 'tools')
   android_platform_dir = os.path.join(android_sdk_home, 'platform-tools')
-  env_path += [android_tools_dir, android_platform_dir]
+  android_buildtools_dir = os.path.join(android_sdk_home, 'build-tools', '23.0.2')
+  env_path += [android_tools_dir, android_platform_dir, android_buildtools_dir]
   env = {'PATH': api.path.pathsep.join(env_path),
          'ANDROID_SDK_ROOT': android_sdk_home}
 
