@@ -111,6 +111,9 @@ def RunSteps(api):
         api.step.active_result.presentation.logs[line] = ''
     else:
       print deferred_step_result.get_result().stderr
+    if "CTS" in description:
+      api.step.active_result.presentation.links['View XML'] = api.path.join("..", "..", "..",
+                                                    "CTS_Result", buildername.replace(" ", "_"), 'build_%s-rev_%s' % (buildnum, rev), "testResult.xml")
 
   with api.step.defer_results():
     # If this build is triggered by sys_image poller, skip public system image step

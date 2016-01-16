@@ -4,6 +4,7 @@ import os, platform
 import unittest
 import time
 import psutil
+import shutil
 import re
 import threading
 from subprocess import PIPE,STDOUT
@@ -66,7 +67,7 @@ class CTSTestCase(EmuBaseTestCase):
         return os.path.join(cts_home, cts_dir, 'android-cts', 'tools', 'cts-tradefed')
 
     def run_cts_plan(self, avd, plan):
-        result_re = re.compile("^.*XML test result file generated at .*Passed ([0-9]+), Failed ([0-9]+), Not Executed ([0-9]+)")
+        result_re = re.compile("^.*XML test result file generated at (.*). Passed ([0-9]+), Failed ([0-9]+), Not Executed ([0-9]+)")
         #self.assertEqual(self.create_avd(avd), 0)
         self.launch_emu_and_wait(avd)
 
@@ -96,9 +97,17 @@ class CTSTestCase(EmuBaseTestCase):
         t_launch.start()
         t_launch.join()
 
+        def move_log(name):
+            """Copy CTS result to log directory"""
+            src_log_path = os.path.join(os.path.dirname(exec_path), "..", "repository", "results", name)
+            dst_log_path = os.path.join(emu_args.session_dir, name)
+            self.m_logger.info("copy CTS log from %s to %s" % (src_log_path, dst_log_path))
+            shutil.copytree(src_log_path, dst_log_path)
         if vars['result_line'] != "":
-            pass_count, fail_count, skip_count = re.match(result_re, vars['result_line']).groups()
+            log_name, pass_count, fail_count, skip_count = re.match(result_re, vars['result_line']).groups()
             self.m_logger.info("Pass: %s, Fail: %s, Not Executed: %s", pass_count, fail_count, skip_count)
+            # copy CTS result to log dir, since cts-tradefed doesn't support custom log location
+            move_log(log_name)
             self.assertEqual(fail_count, '0')
         else:
             self.assertEqual('NA', '0')
