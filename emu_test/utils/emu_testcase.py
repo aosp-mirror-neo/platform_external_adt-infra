@@ -383,7 +383,7 @@ def create_test_case_from_file(desc, testcase_class, test_func):
           qemu_str = "_qemu2"
         setattr(testcase_class, "test_%s_%s%s" % (desc, str(avd_config), qemu_str), func)
 
-        if platform.system() != "Darwin" and avd_config.api > "15" and avd_config.gpu == "yes":
+        if platform.system() in ["Linux"] and avd_config.api > "15" and avd_config.gpu == "yes":
             avd_config_mesa = avd_config._replace(gpu = "mesa")
             create_test_case(avd_config_mesa, op)
 
