@@ -118,7 +118,7 @@ def create_test_case_for_avds():
         res = avd_name_re.match(avd_str)
         assert res is not None
         tag, abi, device, ram, gpu, api = avd_name_re.match(avd_str).groups()
-        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, "yes", ranchu="no", port="", cts=True)
+        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, classic="no", port="", cts=True)
         return avd_config
 
     def fn(avd_name, plan):

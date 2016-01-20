@@ -104,8 +104,7 @@ def RunSteps(api):
     if not deferred_step_result.is_ok:
       stderr_output = deferred_step_result.get_error().result.stderr
       print stderr_output
-      lines = ['%s: %s' % (line[0:line.index(':')], line[line.rfind('.')+1:])
-               for line in stderr_output.split('\n')
+      lines = [line for line in stderr_output.split('\n')
                if line.startswith('FAIL:') or line.startswith('TIMEOUT:')]
       for line in lines:
         api.step.active_result.presentation.logs[line] = ''
@@ -124,20 +123,20 @@ def RunSteps(api):
                      api.path.join(log_dir, 'boot_test_public_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
-                     '{"tot_image": "no"}')
+                     '{"api": "<=21"}')
     # At least one of the system images are available
     if str(api.properties['lmp_revision']) != 'None' and project in ['git_lmp-mr1-emu-dev', 'emu-master-dev']:
       PythonTestStep('Boot Test - LMP System Image',
                      api.path.join(log_dir, 'boot_test_LMP_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
-                     '{"tot_image": "yes", "api": "22"}')
+                     '{"api": "22"}')
     if str(api.properties['mnc_revision']) != 'None' and project in ['git_mnc-emu-dev', 'emu-master-dev']:
       PythonTestStep('Boot Test - MNC System Image',
                      api.path.join(log_dir, 'boot_test_MNC_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
-                     '{"tot_image": "yes", "api": "23"}')
+                     '{"api": "23"}')
     PythonTestStep('Run Emulator CTS Test',
                    api.path.join(log_dir, 'CTS_test'),
                    'test_cts.*',
