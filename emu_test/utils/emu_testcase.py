@@ -125,15 +125,18 @@ class EmuBaseTestCase(LoggedTestCase):
            launch_cmd += ["-gpu", "mesa"]
 
         def launch_in_thread():
+            test_name = self.id().rsplit('.', 1)[-1]
+            logcat_path = os.path.join(emu_args.session_dir, "%s_logcat.txt" % test_name)
+            verbose_log_path = os.path.join(emu_args.session_dir, "%s_verbose.txt" % test_name)
+            with open(logcat_path, 'w') as output:
+                psutil.Popen(["adb", "logcat"], stdout=output, stderr=STDOUT)
             self.start_proc = psutil.Popen(launch_cmd, stdout=PIPE, stderr=STDOUT)
-            lines_iterator = iter(self.start_proc.stdout.readline, b"")
-            for line in lines_iterator:
-            # FIXME: the stdout and stderr from emulator are not true, so we tell if a message is error
-            # based on those key words.
-                if any(x in line for x in ["ERROR", "FAIL", "error", "failed", "FATAL"]) and not line.startswith('['):
-                    self.m_logger.error(line)
-                else:
-                    self.m_logger.debug(line)
+            with open(verbose_log_path, 'w') as verb_output:
+                lines_iterator = iter(self.start_proc.stdout.readline, b"")
+                for line in lines_iterator:
+                    verb_output.write(line)
+                    if any(x in line for x in ["ERROR", "FAIL", "error", "failed", "FATAL"]) and not line.startswith('['):
+                        self.m_logger.error(line)
 
         self.m_logger.info('Launching AVD, cmd: %s', ' '.join(launch_cmd))
         t_launch = threading.Thread(target=launch_in_thread)
