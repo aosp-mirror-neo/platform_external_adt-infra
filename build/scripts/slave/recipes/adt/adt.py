@@ -29,6 +29,8 @@ def RunSteps(api):
     remote_files_list.append(api.properties['mnc_system_image'])
   elif project == 'git_lmp-mr1-emu-dev':
     remote_files_list.append(api.properties['lmp_system_image'])
+  elif project == 'git_nyc-release':
+    remote_files_list.append(api.properties['nyc_system_image'])
 
   download_path = api.path['slave_build'].join('')
   emulator_path = download_path.join('tools', 'emulator')
@@ -137,6 +139,12 @@ def RunSteps(api):
                      'test_boot.*',
                      'boot_cfg.csv',
                      '{"api": "23"}')
+    if str(api.properties['nyc_revision']) != 'None' and project in ['git_nyc-release', 'emu-master-dev']:
+      PythonTestStep('Boot Test - NYC System Image',
+                     api.path.join(log_dir, 'boot_test_NYC_sysimage'),
+                     'test_boot.*',
+                     'boot_cfg.csv',
+                     '{"api": "24"}')
     PythonTestStep('Run Emulator CTS Test',
                    api.path.join(log_dir, 'CTS_test'),
                    'test_cts.*',

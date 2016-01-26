@@ -115,6 +115,18 @@ class EmuBaseTestCase(LoggedTestCase):
                 pass
         return None
 
+    def kill_proc_by_name(self, proc_names):
+        for x in psutil.process_iter():
+            try:
+                proc = psutil.Process(x.pid)
+                # mips 64 use qemu-system-mipsel64, others emulator-[arch]
+                if any([x in proc.name() for x in proc_names]):
+                    if proc.status() != psutil.STATUS_ZOMBIE:
+                        self.m_logger.info("kill_proc_by_name - %s, %s" % (proc.name(), proc.status()))
+                        proc.kill()
+            except psutil.NoSuchProcess:
+                pass
+
     def launch_emu(self, avd):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
@@ -129,6 +141,7 @@ class EmuBaseTestCase(LoggedTestCase):
             logcat_path = os.path.join(emu_args.session_dir, "%s_logcat.txt" % test_name)
             verbose_log_path = os.path.join(emu_args.session_dir, "%s_verbose.txt" % test_name)
             with open(logcat_path, 'w') as output:
+                self.run_with_timeout(["adb", "start-server"], 20)
                 psutil.Popen(["adb", "logcat"], stdout=output, stderr=STDOUT)
             self.start_proc = psutil.Popen(launch_cmd, stdout=PIPE, stderr=STDOUT)
             with open(verbose_log_path, 'w') as verb_output:
@@ -165,6 +178,7 @@ class EmuBaseTestCase(LoggedTestCase):
             self.m_logger.info('cmd %s timeout, force terminate', ' '.join(cmd))
             try:
                 vars['process'].terminate()
+                self.kill_proc_by_name(["adb"])
             except Exception as e:
                 self.m_logger.error('exception terminate adb getprop process: %r', e)
         thread.join(timeout)
@@ -248,8 +262,9 @@ class EmuBaseTestCase(LoggedTestCase):
         gpu = "no" if avd_config.gpu == "no" else "yes"
         set_val('hw.gpu.enabled', gpu)
         set_val('hw.ramSize', avd_config.ram)
+        api_target = avd_config.api if avd_config.api != "24" else "N"
         set_val('image.sysdir.1',
-                'system-images/android-%s/%s/%s/' % (avd_config.api, avd_config.tag, avd_config.abi))
+                'system-images/android-%s/%s/%s/' % (api_target, avd_config.tag, avd_config.abi))
         set_val('tag.display', tag_id_to_display[avd_config.tag])
         set_val('tag.id', avd_config.tag)
 
@@ -277,10 +292,11 @@ class EmuBaseTestCase(LoggedTestCase):
         def try_create():
             android_exec = "android.bat" if os.name == "nt" else "android"
             avd_abi = "%s/%s" % (avd_config.tag, avd_config.abi)
+            api_target = avd_config.api if avd_config.api != "24" else "N"
             if "google" in avd_config.tag:
-                avd_target = "Google Inc.:Google APIs:%s" % (avd_config.api)
+                avd_target = "Google Inc.:Google APIs:%s" % (api_target)
             else:
-                avd_target = "android-%s" % (avd_config.api)
+                avd_target = "android-%s" % (api_target)
             create_cmd = [android_exec, "create", "avd", "--force",
                           "--name", avd_name, "--target", avd_target,
                           "--abi", avd_abi]
@@ -423,12 +439,9 @@ def create_test_case_from_file(desc, testcase_class, test_func):
                     # For 32 bit machine, ram should be less than 768MB
                     if not platform.machine().endswith('64'):
                         ram = str(min([int(ram), 768]))
-                    if api < "22" and row[6] == "yes":
-                        raise ConfigError()
-                    tot_image = row[6] if row[6] == "yes" else "no"
                     avd_config = AVDConfig(api, tag, abi, device, ram, gpu, classic="yes", port=get_port(), cts=False)
                     create_test_case(avd_config, op)
                     # for unreleased images, test with qemu2 in addition
-                    if tot_image == "yes":
+                    if api > "21" and abi != "armeabi-v7a":
                         avd_config = AVDConfig(api, tag, abi, device, ram, gpu, classic="no", port=get_port(), cts=False)
                         create_test_case(avd_config, op)

@@ -28,6 +28,8 @@ def get_dst_dir(remote_path):
       api = '22'
     elif 'mnc' in branch_name:
       api = '23'
+    elif 'nyc' in branch_name:
+      api = 'N'
     else:
       raise ValueError("unsupported image %s", branch_name)
     return os.path.join(os.environ['ANDROID_SDK_ROOT'],
@@ -69,8 +71,10 @@ def download_and_unzip():
         verbose_call(['mkdir', '-p', dst_dir])
         if 'x86_64' in file_path:
           verbose_call(['rm', '-rf', os.path.join(dst_dir,'x86_64')])
-        else:
+        elif 'x86' in file_path:
           verbose_call(['rm', '-rf', os.path.join(dst_dir,'x86')])
+        elif 'armv7' in file_path:
+          verbose_call(['rm', '-rf', os.path.join(dst_dir,'armeabi-v7a')])
         verbose_call(['unzip', '-o', file_name, '-d', dst_dir])
       else:
         verbose_call(['unzip', '-o', file_name])

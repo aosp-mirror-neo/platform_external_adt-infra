@@ -32,7 +32,7 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
             emu_revision = content[0]
             emu_file = ','.join(content[1:])
     except:
-        log.msg("%s: Error - emulator cache file not available, cancle build" % self.name)
+        log.msg("%s: Error - emulator cache file not available, cancel build" % self.name)
         cancel_build = True
     try:
         with open('sys_image_lmp_poller.cache', 'r') as f:
@@ -50,11 +50,21 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
     except:
         mnc_revision = 'None'
         mnc_file = ''
+    try:
+        with open('sys_image_nyc_poller.cache', 'r') as f:
+            content = f.read().splitlines()
+            nyc_revision = content[0]
+            nyc_file = ','.join(content[1:])
+    except:
+        nyc_revision = 'None'
+        nyc_file = ''
 
     self.properties.setProperty('mnc_revision', mnc_revision, 'Scheduler')
     self.properties.setProperty('mnc_system_image', mnc_file, 'Scheduler')
     self.properties.setProperty('lmp_revision', lmp_revision, 'Scheduler')
     self.properties.setProperty('lmp_system_image', lmp_file, 'Scheduler')
+    self.properties.setProperty('nyc_revision', nyc_revision, 'Scheduler')
+    self.properties.setProperty('nyc_system_image', nyc_file, 'Scheduler')
     self.properties.setProperty('emu_revision', emu_revision, 'Scheduler')
     self.properties.setProperty('emulator_image', emu_file, 'Scheduler')
     self.properties.setProperty('got_revision', '%s-%s-%s' % (emu_revision, mnc_revision, lmp_revision), 'Scheduler')

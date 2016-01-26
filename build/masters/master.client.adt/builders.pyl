@@ -30,6 +30,19 @@
        "project": "git_lmp-mr1-emu-dev",
        "branch": "all",
        "name_identifier": "system-images",
+     },
+     "sys_image_nyc_poller": {
+       "gs_bucket": "android-build-emu-sysimage",
+       "gs_path": ["builds/git_nyc-release-linux-sdk_phone_armv7-win_sdk/",
+                   "builds/git_nyc-release-linux-sdk_google_phone_x86-sdk_addon/",
+                   "builds/git_nyc-release-linux-sdk_google_phone_x86_64-sdk_addon/",
+                   "builds/git_nyc-release-linux-sdk_phone_x86-sdk/",
+                   "builds/git_nyc-release-linux-sdk_phone_x86_64-sdk/"],
+       "pollInterval": 1007,
+       "type": "GSMultiPoller",
+       "project": "git_nyc-release",
+       "branch": "all",
+       "name_identifier": "system-images",
     },
     "emulator_linux_poller": {
        "gs_bucket": "android-build-emu",
@@ -129,17 +142,17 @@
 
   "schedulers": {
     "emu_linux_scheduler": {
-      "project": ["emu-master-dev", "git_lmp-mr1-emu-dev", "git_mnc-emu-dev"],
+      "project": ["emu-master-dev", "git_lmp-mr1-emu-dev", "git_mnc-emu-dev", "git_nyc-release"],
       "branch": ["linux", "all"],
       "type": "gs_poller",
     },
     "emu_mac_scheduler": {
-      "project": ["emu-master-dev", "git_lmp-mr1-emu-dev", "git_mnc-emu-dev"],
+      "project": ["emu-master-dev", "git_lmp-mr1-emu-dev", "git_mnc-emu-dev", "git_nyc-release"],
       "branch": ["mac", "all"],
       "type": "gs_poller",
     },
     "emu_windows_scheduler": {
-      "project": ["emu-master-dev", "git_lmp-mr1-emu-dev", "git_mnc-emu-dev"],
+      "project": ["emu-master-dev", "git_lmp-mr1-emu-dev", "git_mnc-emu-dev", "git_nyc-release"],
       "branch": ["windows", "all"],
       "type": "gs_poller",
     },

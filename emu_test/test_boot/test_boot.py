@@ -20,26 +20,13 @@ class BootTestCase(EmuBaseTestCase):
         super(BootTestCase, cls).setUpClass()
 
     def tearDown(self):
-
-        def kill_proc_by_name(proc_names):
-            for x in psutil.process_iter():
-                try:
-                    proc = psutil.Process(x.pid)
-                    # mips 64 use qemu-system-mipsel64, others emulator-[arch]
-                    if any([x in proc.name() for x in proc_names]):
-                        if proc.status() != psutil.STATUS_ZOMBIE:
-                            self.m_logger.info("kill_proc_by_name - %s, %s" % (proc.name(), proc.status()))
-                            proc.kill()
-                except psutil.NoSuchProcess:
-                    pass
-
         self.m_logger.debug('First try - quit emulator by adb emu kill')
         kill_proc = psutil.Popen(["adb", "emu", "kill"])
         # check emulator process is terminated
         result = self.term_check(timeout=5)
         if not result:
             self.m_logger.debug('Second try - quit emulator by psutil')
-            kill_proc_by_name(["emulator", "qemu-system"])
+            self.kill_proc_by_name(["emulator", "qemu-system"])
             result = self.term_check(timeout=10)
             self.m_logger.debug("term_check after psutil.kill - %s", result)
         self.m_logger.info("Remove AVD inside of tear down")
@@ -48,7 +35,7 @@ class BootTestCase(EmuBaseTestCase):
         try:
             if result:
                 self.start_proc.wait()
-            kill_proc_by_name(["crash-service"])
+            self.kill_proc_by_name(["crash-service"])
             psutil.Popen(["adb", "kill-server"])
             os.remove(os.path.join(avd_dir, '%s.ini' % self.avd_config.name()))
             shutil.rmtree(os.path.join(avd_dir, '%s.avd' % self.avd_config.name()), ignore_errors=True)
