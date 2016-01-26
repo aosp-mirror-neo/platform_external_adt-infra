@@ -4,7 +4,7 @@ API 24,android-tv,armeabi-v7a,Android TV (1080p),2048,yes,,,,,,,,,,,,,
 ,,x86,Android TV (1080p),2048,yes,,,,,,,,,,,,,
 ,default,armeabi-v7a,Nexus 6,2048,yes,,,,,,,,,,,,,
 ,,x86,Nexus 5,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,,x86_64,Nexus 5,2048,yes,P,P,P,P,S,P,P,P,P,P,P,P,P
+,,x86_64,Nexus 5,2048,yes,,,,,,,,,,,,,
 ,google_apis,armeabi-v7a,Galaxy Nexus,2048,yes,,,,,,,,,,,,,
 ,,x86,Nexus 5,2048,yes,,,,,,,,,,,,,
 ,,x86_64,Nexus 5,2048,yes,,,,,,,,,,,,,
