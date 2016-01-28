@@ -67,7 +67,7 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
     self.properties.setProperty('nyc_system_image', nyc_file, 'Scheduler')
     self.properties.setProperty('emu_revision', emu_revision, 'Scheduler')
     self.properties.setProperty('emulator_image', emu_file, 'Scheduler')
-    self.properties.setProperty('got_revision', '%s-%s-%s' % (emu_revision, mnc_revision, lmp_revision), 'Scheduler')
+    self.properties.setProperty('got_revision', '%s-%s-%s-%s' % (emu_revision, mnc_revision, lmp_revision, nyc_revision), 'Scheduler')
     self.properties.setProperty('logs_dir', os.path.join(os.getcwd(), 'slave_logs', ''), 'Scheduler')
 
     rv = yield SingleBranchScheduler.addBuildsetForChanges(
