@@ -132,10 +132,11 @@ class EmuBaseTestCase(LoggedTestCase):
         exec_path = emu_args.emulator_exec
         launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
         if avd.classic == "yes" and avd.api > "21":
-           launch_cmd += ["-engine", "classic"]
+            launch_cmd += ["-engine", "classic"]
         if avd.gpu == "mesa":
-           launch_cmd += ["-gpu", "mesa"]
-
+            launch_cmd += ["-gpu", "mesa"]
+        if avd.cts:
+            launch_cmd += ["-gpu", "guest"]
         def launch_in_thread():
             test_name = self.id().rsplit('.', 1)[-1]
             logcat_path = os.path.join(emu_args.session_dir, "%s_logcat.txt" % test_name)
