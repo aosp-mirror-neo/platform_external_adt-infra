@@ -89,8 +89,7 @@ def download_and_unzip():
     remote_path = '%s@%s:%s' % (args.remote_user, args.remote_ip, file_path)
     file_name = os.path.basename(remote_path)
     try:
-      #verbose_call(['scp', remote_path, '.'])
-      verbose_call(['scp', file_path, '.'])
+      verbose_call(['scp', remote_path, '.'])
       if dst_dir is not None:
         verbose_call(['mkdir', '-p', dst_dir])
         if 'x86_64' in file_path:
