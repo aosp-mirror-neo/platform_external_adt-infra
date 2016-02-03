@@ -2,6 +2,8 @@ import os
 import argparse
 import subprocess
 import psutil
+import zipfile
+import shutil
 
 parser = argparse.ArgumentParser(description='Download and unzip a list of files separated by comma')
 parser.add_argument('--file', dest='remote_file_list', action='store',
@@ -18,18 +20,22 @@ args = parser.parse_args()
 
 def get_dst_dir(remote_path):
   file_name = os.path.basename(remote_path)
-  if file_name.startswith('sdk-repo-linux-system-images'):
+  if file_name.startswith('sdk-repo-linux-system-images') or file_name.startswith('sdk-repo-linux-addon'):
     branch_name = remote_path.split('/')[-2]
     if 'google_phone' in branch_name:
       tag = 'google_apis'
     else:
       tag = 'default'
-    if 'lmp' in branch_name:
+    if 'lmp_mr1' in branch_name:
       api = '22'
     elif 'mnc' in branch_name:
       api = '23'
     elif 'nyc' in branch_name:
       api = 'N'
+    elif 'lmp' in branch_name:
+      api = '21'
+    elif 'klp' in branch_name:
+      api = '19'
     else:
       raise ValueError("unsupported image %s", branch_name)
     return os.path.join(os.environ['ANDROID_SDK_ROOT'],
@@ -49,14 +55,31 @@ def clean_emu_proc():
     except:
       pass
 
+def verbose_call(cmd):
+  print "Run command %s" % ' '.join(cmd)
+  subprocess.check_call(cmd)
+
+def unzip_addon_dir(file_name, dst_dir):
+  print file_name, dst_dir
+  with open(file_name, 'rb') as fh:
+    z = zipfile.ZipFile(fh)
+    for name in z.namelist():
+      if ("images/") in name and not name.endswith("images/"):
+        base_name = os.path.basename(name)
+        if not base_name:
+          abi = os.path.basename(os.path.normpath(name))
+          verbose_call(["mkdir", "-p", os.path.join(dst_dir,abi)])
+          print "Found abi %s" % abi
+          continue
+        dst_path = os.path.join(dst_dir, abi, base_name)
+        with z.open(name) as src, file(dst_path, "wb") as dst:
+          print "unzip from %s to %s" % (name, dst_path)
+          shutil.copyfileobj(src, dst)
+
 def download_and_unzip():
   clean_emu_proc()
   file_list = args.remote_file_list.split(',')
   dst_dir = get_dst_dir(file_list[0])
-
-  def verbose_call(cmd):
-    print "Run command %s" % ' '.join(cmd)
-    subprocess.check_call(cmd)
 
   for file_path in file_list:
     file_path = file_path.strip('\n')
@@ -66,7 +89,8 @@ def download_and_unzip():
     remote_path = '%s@%s:%s' % (args.remote_user, args.remote_ip, file_path)
     file_name = os.path.basename(remote_path)
     try:
-      verbose_call(['scp', remote_path, '.'])
+      #verbose_call(['scp', remote_path, '.'])
+      verbose_call(['scp', file_path, '.'])
       if dst_dir is not None:
         verbose_call(['mkdir', '-p', dst_dir])
         if 'x86_64' in file_path:
@@ -75,7 +99,10 @@ def download_and_unzip():
           verbose_call(['rm', '-rf', os.path.join(dst_dir,'x86')])
         elif 'armv7' in file_path:
           verbose_call(['rm', '-rf', os.path.join(dst_dir,'armeabi-v7a')])
-        verbose_call(['unzip', '-o', file_name, '-d', dst_dir])
+        if 'system-images' in file_path:
+          verbose_call(['unzip', '-o', file_name, '-d', dst_dir])
+        else:
+          unzip_addon_dir(file_name, dst_dir)
       else:
         verbose_call(['unzip', '-o', file_name])
     except Exception as e:

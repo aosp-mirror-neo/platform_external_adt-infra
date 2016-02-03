@@ -32,10 +32,10 @@ API 21,android-tv,armeabi-v7a,Android TV (1080p),2048,yes,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 ,default,armeabi-v7a,Nexus 5,2048,yes,P,P,P,P,P,,P,P,P,P,P,P,P
 ,,x86,Nexus 5,2048,yes,P,P,P,P,P,P,P,P,P,P,P,P,P
-,,x86_64,Nexus 5,2048,yes,P,P,P,P,S,,P,P,P,X,X,X,X
+,,x86_64,Nexus 5,2048,yes,P,P,P,P,S,,P,P,P,P,P,P,P
 ,google_apis,armeabi-v7a,,,,,,P,,,,,,,,,,
-,,x86,,,,,,P,,,,,,,,,,
-,,x86_64,,,,,,P,,,,,,,,,,
+,,x86,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
+,,x86_64,,,,P,P,P,P,P,P,P,P,P,P,P,P,P
 API 20,android-wear,armeabi-v7a,,,,,,P,,,,,,,,,,
 ,,x86,,,,,,P,,,,,,,,,,
 API 19,default,armeabi-v7a,,,,,,P,,,,,,,,,,
