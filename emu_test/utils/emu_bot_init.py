@@ -81,4 +81,5 @@ if __name__ == "__main__":
     clean_up()
   except:
     pass
-  update_sdk('add-on,system-image,extra,platform-tool,platform,tool')
+  if os.name != "nt":
+    update_sdk('add-on,system-image,extra,platform-tool,platform,tool')
