@@ -81,7 +81,7 @@ def RunSteps(api):
   log_dir = 'logs-build_%s-rev_%s' % (buildnum, rev)
 
   try:
-    api.python('Clean up bot', init_bot_util_path,
+    api.python('Initialize Bot', init_bot_util_path,
                ['--build-dir', api.path['slave_build']],
                env=env)
   except api.step.StepFailure as f: # pragma: no cover
@@ -129,7 +129,7 @@ def RunSteps(api):
                      api.path.join(log_dir, 'boot_test_public_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
-                     '{"api": "<=21"}')
+                     '{"api": "<=21", "tag": "default"}')
     # At least one of the system images are available
     if str(api.properties['lmp_mr1_revision']) != 'None' and project in ['git_lmp-mr1-emu-dev', 'emu-master-dev']:
       PythonTestStep('Boot Test - LMP MR1 System Image',
