@@ -36,6 +36,7 @@
        "gs_path": ["builds/git_nyc-release-linux-sdk_phone_armv7-win_sdk/",
                    "builds/git_nyc-release-linux-sdk_google_phone_x86-sdk_addon/",
                    "builds/git_nyc-release-linux-sdk_google_phone_x86_64-sdk_addon/",
+                   "builds/git_nyc-release-linux-sdk_google_atv_x86-sdk/",
                    "builds/git_nyc-release-linux-sdk_phone_x86-sdk/",
                    "builds/git_nyc-release-linux-sdk_phone_x86_64-sdk/"],
        "pollInterval": 977,
