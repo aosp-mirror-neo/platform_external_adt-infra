@@ -82,7 +82,8 @@ def RunSteps(api):
 
   try:
     api.python('Initialize Bot', init_bot_util_path,
-               ['--build-dir', api.path['slave_build']],
+               ['--build-dir', api.path['slave_build'],
+                '--log-dir', log_dir],
                env=env)
   except api.step.StepFailure as f: # pragma: no cover
     # Not able to delete some files, it won't be the fault of emulator
