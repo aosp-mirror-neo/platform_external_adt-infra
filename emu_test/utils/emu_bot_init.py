@@ -62,7 +62,7 @@ def clean_up():
 
 def update_sdk(filter):
     android_exec = "android.bat" if os.name == "nt" else "android"
-    cmd = [android_exec, "update", "sdk", "-s", "--no-ui", "--filter", filter]
+    cmd = [android_exec, "update", "sdk", "-s", "--no-ui", "--filter", filter, "--force"]
     logger.info("Update android sdk, cmd: %s", ' '.join(cmd))
     ps = psutil.Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT, bufsize=1)
     with ps.stdout:
