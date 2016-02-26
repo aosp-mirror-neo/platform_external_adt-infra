@@ -67,11 +67,13 @@ def update_sdk(filter):
     ps = psutil.Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT, bufsize=1)
     with ps.stdout:
       ps.stdin.write('y\n')
+      ps.stdin.flush()
       for line in iter(ps.stdout.readline, b""):
         logger.info(line)
         if "Do you accept the license" in line:
           try:
             ps.stdin.write('y\n')
+            ps.stdin.flush()
           except:
             pass
       ps.wait()
@@ -81,5 +83,4 @@ if __name__ == "__main__":
     clean_up()
   except:
     pass
-  if os.name != "nt":
-    update_sdk('add-on,system-image,extra,platform-tool,platform,tool')
+  update_sdk('add-on,system-image,extra,platform-tool,platform,tool')
