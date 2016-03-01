@@ -1,0 +1,18 @@
+
+application: dashboard
+version: bq
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /styles.css
+  static_files: styles.css
+  upload: styles.css
+
+- url: .*
+  script: main.application
+
+libraries:
+- name: webapp2
+  version: latest

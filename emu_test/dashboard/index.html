@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+  <title>emulator dashboard</title>
+  <script type='text/javascript'
+     src='https://www.google.com/jsapi'></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type='text/javascript'>
+     google.load('visualization', '1', {'packages':
+       ['corechart', 'table']});
+     google.setOnLoadCallback(init);
+     var colorSet = ["Green", "Red", "Blue", "Salmon", "DarkOliveGreen", "MediumOrchid", "SkyBlue", "DarkOrange", "Aquamarine", "Crimson", "SpringGreen", "RoyalBlue", "DeepPink"]; 
+
+     function drawGraph(desc, data, sum_values, host_count) {
+       var data_table = new google.visualization.DataTable(data);
+       var col_count = data_table.getNumberOfColumns()-1;
+       var col_per_host = col_count/host_count;
+
+       var lineDict = {};
+       for (var i = 1; i < col_per_host; i++)
+       {
+         for (var j = 0; j < host_count; j++)
+           lineDict[j*col_per_host+i] = {lineDashStyle: [i*2, 2]};
+       }
+       var lineColor = [];
+       for (var i = 0; i < col_count; i++)
+       {
+         lineColor.push(colorSet[Math.floor(i/col_per_host)]);
+       }
+
+       var options = {
+                    width: 1500,
+                    height: 900,
+                    title: desc,
+                    interpolateNulls: true,
+                    series: lineDict,
+                    colors: lineColor,
+                    hAxis: {title: 'Build'},
+                    vAxis: {title: 'Boot Time in Seconds'},
+       };
+       var chart_table = document.getElementById("chart_table");
+       var row = chart_table.insertRow();
+       var cell_data = row.insertCell(0);
+       var cell_sum = row.insertCell(1);
+
+       var line_chart = new google.visualization.LineChart(cell_data);
+       //var sum_table = new google.visualization.DataTable(sum_values);
+       //var sum_chart = new google.visualization.Table(cell_sum);
+       line_chart.draw(data_table, options);
+       //sum_chart.draw(sum_table, {showRowNumber: false});
+     }
+     function createCheckboxGroup(ele_arr, group_desc, parent_id, box_type) {
+       var fieldset = document.createElement('fieldset');
+       var legend = document.createElement ('legend');
+       legend.innerHTML = group_desc;
+       fieldset.appendChild (legend);
+
+       function toggle(source) {
+         checkboxes = document.getElementsByName(group_desc);
+         for(var i=0, n=checkboxes.length;i<n;i++) {
+           checkboxes[i].checked = source.checked;
+         }
+       }
+
+       function create_checkbox(display_name, group_name) {
+         var checkbox = document.createElement('input');
+         checkbox.type = box_type;
+         checkbox.name = group_name;
+         checkbox.value = display_name;
+         checkbox.id = display_name;
+         if (display_name == "ALL")
+           checkbox.onclick = function(){toggle(this);};
+
+         var label = document.createElement('label_' + display_name)
+         label.htmlFor = display_name;
+         label.appendChild(document.createTextNode(display_name));
+
+         var br = document.createElement('br');
+         label.appendChild(br);
+
+         fieldset.appendChild(checkbox);
+         fieldset.appendChild(label);
+       }
+
+       for( var i = 0; i < ele_arr.length; i++) {
+         create_checkbox(ele_arr[i], group_desc);
+       }
+
+       if (box_type == 'checkbox')
+         create_checkbox("ALL", group_desc + "_ALL");
+       var container = document.getElementById(parent_id);
+       container.appendChild(fieldset);
+     }
+
+     function init() {
+       var host = ["Mac_10.10.5_Iris_Pro",
+                   "Mac_10.11.1_Iris_Pro",
+                   "Mac_10.8.5_Intel_HD_5000",
+                   "Mac_10.10.5_Intel_HD_5000",
+                   "Ubuntu_15.04_Quadro_K600",
+                   "Ubuntu_14.04_Quadro_600",
+                   "Ubuntu_14.04_HD_4400",
+                   "Ubuntu_12.04_HD_Graphics_4000",
+                   "Win_10_64-bit_Quadro_600",
+                   "Win_7_32-bit_HD_4400",
+                   "Win_7_64-bit_HD_4400",
+                   "Win_8.1_64-bit_Quadro_600",
+                   "Win_8_64-bit_Quadro_600"];
+       var apis = ["24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "10"];
+       var tags = ["default", "google_apis", "android-wear", "android-tv"];
+       var abis = ["x86", "x86_64", "armeabi-v7a", "mips", "mips64"];
+       var gpus = ["mesa", "on", "off"];
+       var qemus = ["qemu1", "qemu2"];
+
+       createCheckboxGroup(apis, 'API', 'td_api', 'radio');
+       createCheckboxGroup(abis, 'ABI', 'td_abi', 'radio');
+       createCheckboxGroup(host, 'HOST', 'td_host', 'checkbox');
+       createCheckboxGroup(tags, 'TAG', 'td_tag', 'checkbox');
+       createCheckboxGroup(gpus, 'GPU', 'td_gpu', 'checkbox');
+       createCheckboxGroup(qemus, 'QEMU', 'td_qemu', 'checkbox');
+     }
+
+     function paintOnSelection() {
+       document.getElementById('paint_btn').disabled = true;
+       $("#chart_table tr").remove();
+       document.getElementById('msg_result').innerHTML = ""
+       var empty_selection = "";
+       function get_var(group){
+         var checkedBoxes = document.querySelectorAll(group);
+         var arr = [];
+         for (var i=0; i<checkedBoxes.length; i++) {
+           arr.push(checkedBoxes[i].value);
+         }
+         if (arr.length == 0){
+           empty_selection += group.substring(group.indexOf("name=")+6, group.indexOf("]:checked")-1) + "/";
+         }
+         return arr;
+       };
+
+       var apis = get_var('input[name="API"]:checked');
+       var tags = get_var('input[name="TAG"]:checked');
+       var abis = get_var('input[name="ABI"]:checked');
+       var hosts = get_var('input[name="HOST"]:checked');
+       var gpus = get_var('input[name="GPU"]:checked');
+       var qemus = get_var('input[name="QEMU"]:checked');
+
+       if (empty_selection != ""){
+         alert("Please select " + empty_selection)
+         document.getElementById('paint_btn').disabled = false;
+         return;
+       }
+       var selected_vars = { "HOST": hosts,
+                             "API": apis,
+                             "TAG": tags,
+                             "ABI": abis,
+                             "GPU": gpus,
+                             "QEMU": qemus };
+       $.ajax({
+           type: "POST",
+           url: "/run_query",
+           dataType: 'json',
+           data: JSON.stringify({ "paint_vars": selected_vars})
+        })
+        .done(function( data ) {
+           document.getElementById('msg_result').innerHTML = data['table_row_count'].toString() + " Results Returned!"
+           document.getElementById('paint_btn').disabled = false;
+           if(data['table_row_count'] != 0){
+               drawGraph(data['table_title'], data['table_bootdata'], data['table_sumdata'], hosts.length);
+           }
+        })
+        .fail(function(jqXHR, textStatus) {
+           alert("Query FAIL, please contact chying@ for access");
+           document.getElementById('paint_btn').disabled = false;
+        });
+     };
+  </script>
+</head>
+<body>
+  <h2>Emulator Dashboard</h2>
+  <form name='form_config' action="javascript:paintOnSelection()">
+  <!-- form name='form_config' action="run_query" method="post" -->
+    <table>
+      <tr>
+        <td id='td_api'></td>
+        <td id='td_abi'></td>
+        <td id='td_host'></td>
+        <td id='td_tag'></td>
+        <td id='td_gpu'></td>
+        <td id='td_qemu'></td>
+      </tr>
+      <tr>
+        <td colspan="6" align="right" style="padding: 10px;">
+          <button class='myButton' type='submit' id='paint_btn'>PAINT</button>
+        </td>
+      </tr>
+    </table>
+    <pre id='msg_result' align="left" style="color:#FF0000; font-weight:bold; padding: 10px"></pre>
+    <table id='chart_table'>
+    </table>
+  </form>
+  <p>Backed by Google's BigQuery and running in Python on App Engine.</p>
+</body>
+</html>

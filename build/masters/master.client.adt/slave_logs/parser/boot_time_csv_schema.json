@@ -1,0 +1,57 @@
+[
+  {
+    "name": "api",
+    "type": "integer",
+    "mode": "nullable"
+  },
+  {
+    "name": "tag",
+    "type": "string",
+    "mode": "nullable"
+  },
+  {
+    "name": "abi",
+    "type": "string",
+    "mode": "nullable"
+  }, {
+    "name": "device",
+    "type": "string",
+    "mode": "nullable"
+  },
+  {
+    "name": "ram",
+    "type": "string",
+    "mode": "nullable"
+  },
+  {
+    "name": "gpu",
+    "type": "string",
+    "mode": "nullable"
+  },
+  {
+    "name": "qemu",
+    "type": "string",
+    "mode": "nullable"
+  },
+  {
+    "name": "builderName",
+    "type": "string",
+    "mode": "required"
+  },
+  {
+    "name": "buildNumber",
+    "type": "integer",
+    "mode": "required"
+  },
+  {
+    "name": "revision",
+    "type": "string",
+    "mode": "required"
+  },
+  {
+    "name": "boottime",
+    "type": "float",
+    "mode": "required"
+  }
+]
+
