@@ -26,64 +26,34 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
     for x in ['windows', 'linux', 'mac']:
       if x in self.name:
         emu_cache_file = 'emulator_%s_poller.cache' % x
-    try:
-        with open(emu_cache_file, 'r') as f:
-            content = f.read().splitlines()
-            emu_revision = content[0]
-            emu_file = ','.join(content[1:])
-    except:
-        log.msg("%s: Error - emulator cache file not available, cancel build" % self.name)
-        cancel_build = True
-    try:
-        with open('sys_image_lmp_mr1_poller.cache', 'r') as f:
-            content = f.read().splitlines()
-            lmp_mr1_revision = content[0]
-            lmp_mr1_file = ','.join(content[1:])
-    except:
-        lmp_mr1_revision = 'None'
-        lmp_mr1_file = ''
-    try:
-        with open('sys_image_mnc_poller.cache', 'r') as f:
-            content = f.read().splitlines()
-            mnc_revision = content[0]
-            mnc_file = ','.join(content[1:])
-    except:
-        mnc_revision = 'None'
-        mnc_file = ''
+
+    def readRev(cache_file):
+      rev, file_list = 'None', ''
+      try:
+        with open(cache_file, 'r') as f:
+          content = f.read().splitlines()
+          rev = content[0]
+          file_list = ','.join(content[1:])
+      except:
+        log.msg("%s: Error - %s file not available" % (self.name, cache_file))
+      return rev, file_list
+
+    emu_revision, emu_file = readRev(emu_cache_file)
+    if emu_revision == 'None':
+      log.msg("%s: Error - emu cache file %s not available, cancel build" % (self.name, emu_cache_file))
+      return
+    lmp_mr1_revision, lmp_mr1_file = readRev('sys_image_lmp_mr1_poller.cache')
+    mnc_revision, mnc_file = readRev('sys_image_mnc_poller.cache')
+
     if 'dev' in self.name:
-        try:
-            with open('sys_image_nyc_dev_poller.cache', 'r') as f:
-                content = f.read().splitlines()
-                nyc_revision = content[0]
-                nyc_file = ','.join(content[1:])
-        except:
-            nyc_revision = 'None'
-            nyc_file = ''
+      nyc_poller = 'sys_image_nyc_dev_poller.cache'
     else:
-        try:
-            with open('sys_image_nyc_release_poller.cache', 'r') as f:
-                content = f.read().splitlines()
-                nyc_revision = content[0]
-                nyc_file = ','.join(content[1:])
-        except:
-            nyc_revision = 'None'
-            nyc_file = ''
-    try:
-        with open('sys_image_lmp_poller.cache', 'r') as f:
-            content = f.read().splitlines()
-            lmp_revision = content[0]
-            lmp_file = ','.join(content[1:])
-    except:
-        lmp_revision = 'None'
-        lmp_file = ''
-    try:
-        with open('sys_image_klp_poller.cache', 'r') as f:
-            content = f.read().splitlines()
-            klp_revision = content[0]
-            klp_file = ','.join(content[1:])
-    except:
-        klp_revision = 'None'
-        klp_file = ''
+      nyc_poller = 'sys_image_nyc_release_poller.cache'
+
+    nyc_revision, nyc_file = readRev(nyc_poller)
+    lmp_revision, lmp_file = readRev('sys_image_lmp_poller.cache')
+    klp_revision, klp_file = readRev('sys_image_klp_poller.cache')
+
     self.properties.setProperty('mnc_revision', mnc_revision, 'Scheduler')
     self.properties.setProperty('mnc_system_image', mnc_file, 'Scheduler')
     self.properties.setProperty('lmp_mr1_revision', lmp_mr1_revision, 'Scheduler')

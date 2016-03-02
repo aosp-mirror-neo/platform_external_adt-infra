@@ -162,7 +162,7 @@ def RunSteps(api):
                      'test_boot.*',
                      'boot_cfg.csv',
                      '{"api": "19", "tag": "default"}')
-    if str(api.properties['scheduler']) == "cts_scheduler":
+    if "cts" in str(api.properties['scheduler']):
       PythonTestStep('Run Emulator CTS Test',
                      api.path.join(log_dir, 'CTS_test'),
                      'test_cts.*',

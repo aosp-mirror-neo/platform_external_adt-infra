@@ -121,7 +121,7 @@
      },
      "Ubuntu 15.04 Quadro K600": {
        "recipe": "adt/adt",
-       "scheduler": "cts_scheduler",
+       "scheduler": "cts_linux_scheduler",
        "slave_pools": ["ubuntu-15_04-nvidia-quadro-k600"],
        "category": "CTS",
      },
@@ -202,7 +202,7 @@
       "branch": ["windows", "all"],
       "type": "gs_poller",
     },
-    "cts_scheduler": {
+    "cts_linux_scheduler": {
       "project": ["emu-master-dev", "git_lmp-mr1-emu-dev", "git_mnc-emu-dev", "git_nyc-emu-release", "git_lmp-emu-dev"],
       "branch": ["linux", "all"],
       "type": "gs_poller",
