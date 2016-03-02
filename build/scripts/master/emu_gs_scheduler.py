@@ -50,14 +50,24 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
     except:
         mnc_revision = 'None'
         mnc_file = ''
-    try:
-        with open('sys_image_nyc_poller.cache', 'r') as f:
-            content = f.read().splitlines()
-            nyc_revision = content[0]
-            nyc_file = ','.join(content[1:])
-    except:
-        nyc_revision = 'None'
-        nyc_file = ''
+    if 'dev' in self.name:
+        try:
+            with open('sys_image_nyc_dev_poller.cache', 'r') as f:
+                content = f.read().splitlines()
+                nyc_revision = content[0]
+                nyc_file = ','.join(content[1:])
+        except:
+            nyc_revision = 'None'
+            nyc_file = ''
+    else:
+        try:
+            with open('sys_image_nyc_release_poller.cache', 'r') as f:
+                content = f.read().splitlines()
+                nyc_revision = content[0]
+                nyc_file = ','.join(content[1:])
+        except:
+            nyc_revision = 'None'
+            nyc_file = ''
     try:
         with open('sys_image_lmp_poller.cache', 'r') as f:
             content = f.read().splitlines()
