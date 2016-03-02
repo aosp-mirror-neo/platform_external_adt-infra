@@ -162,11 +162,12 @@ def RunSteps(api):
                      'test_boot.*',
                      'boot_cfg.csv',
                      '{"api": "19", "tag": "default"}')
-    PythonTestStep('Run Emulator CTS Test',
-                   api.path.join(log_dir, 'CTS_test'),
-                   'test_cts.*',
-                   'cts_cfg.csv',
-                   '{"tot_image": "no"}')
+    if str(api.properties['scheduler']) == "cts_scheduler":
+      PythonTestStep('Run Emulator CTS Test',
+                     api.path.join(log_dir, 'CTS_test'),
+                     'test_cts.*',
+                     'cts_cfg.csv',
+                     '{"tot_image": "no"}')
     api.python("Zip and Upload Logs", log_util_path,
                ['--dir', log_dir,
                 '--name', 'build_%s-rev_%s.zip' % (buildnum, rev),
