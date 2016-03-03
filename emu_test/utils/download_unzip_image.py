@@ -22,8 +22,10 @@ def get_dst_dir(remote_path):
   file_name = os.path.basename(remote_path)
   if file_name.startswith('sdk-repo-linux-system-images') or file_name.startswith('sdk-repo-linux-addon'):
     branch_name = remote_path.split('/')[-2]
-    if 'google_phone' in branch_name:
+    if 'google_phone' in branch_name and 'addon' in branch_name:
       tag = 'google_apis'
+    elif 'google_atv' in branch_name:
+      tag = 'android-tv'
     else:
       tag = 'default'
     if 'lmp_mr1' in branch_name:
