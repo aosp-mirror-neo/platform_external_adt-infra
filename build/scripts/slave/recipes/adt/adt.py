@@ -130,7 +130,7 @@ def RunSteps(api):
                      api.path.join(log_dir, 'boot_test_public_sysimage'),
                      'test_boot.*',
                      'boot_cfg.csv',
-                     '{"api": "<=21", "tag": "default"}')
+                     '{"api": "<=21", "classic": "yes"}')
     # At least one of the system images are available
     if str(api.properties['lmp_mr1_revision']) != 'None' and project in ['git_lmp-mr1-emu-dev', 'emu-master-dev']:
       PythonTestStep('Boot Test - LMP MR1 System Image',

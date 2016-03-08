@@ -131,7 +131,7 @@ class EmuBaseTestCase(LoggedTestCase):
         """Launch given avd and return immediately"""
         exec_path = emu_args.emulator_exec
         launch_cmd = [exec_path, "-avd", str(avd), "-verbose", "-show-kernel", "-wipe-data"]
-        if avd.classic == "yes" and avd.api > "21":
+        if avd.classic == "yes" and avd.api > "18":
             launch_cmd += ["-engine", "classic"]
         if avd.gpu == "mesa":
             launch_cmd += ["-gpu", "mesa"]
@@ -440,9 +440,12 @@ def create_test_case_from_file(desc, testcase_class, test_func):
                     # For 32 bit machine, ram should be less than 768MB
                     if not platform.machine().endswith('64'):
                         ram = str(min([int(ram), 768]))
-                    avd_config = AVDConfig(api, tag, abi, device, ram, gpu, classic="yes", port=get_port(), cts=False)
-                    create_test_case(avd_config, op)
-                    # for unreleased images, test with qemu2 in addition
+                    # for api lower than 22, test with qemu1, arm all level can only be launched with qemu1
+                    # disable qemu1 testing on api 22+ based on request from vharron@
+                    if api < "22" or abi == "armeabi-v7a":
+                        avd_config = AVDConfig(api, tag, abi, device, ram, gpu, classic="yes", port=get_port(), cts=False)
+                        create_test_case(avd_config, op)
+                    # for api 21+, test with qemu2
                     if api > "21" and abi != "armeabi-v7a":
                         avd_config = AVDConfig(api, tag, abi, device, ram, gpu, classic="no", port=get_port(), cts=False)
                         create_test_case(avd_config, op)
