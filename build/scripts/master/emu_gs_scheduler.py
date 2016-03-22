@@ -31,7 +31,7 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
       log.msg("%s: Error reading project.cache" % self.name)
     for x in ['windows', 'linux', 'mac']:
       if x in self.name:
-        if project is not None and 'emu-2.0' in project:
+        if project is not None and 'emu-2.0-release' in project:
           emu_cache_file = 'emulator_2.0_%s_poller.cache' % x
         else:
           emu_cache_file = 'emulator_%s_poller.cache' % x
@@ -77,8 +77,8 @@ class EmulatorSingleBranchScheduler(SingleBranchScheduler):
     self.properties.setProperty('emulator_image', emu_file, 'Scheduler')
     self.properties.setProperty('got_revision', '%s-%s-%s-%s-%s' % (emu_revision, mnc_revision, lmp_mr1_revision, nyc_revision, lmp_revision), 'Scheduler')
     self.properties.setProperty('logs_dir', os.path.join(os.getcwd(), 'slave_logs', ''), 'Scheduler')
-    if 'emu-2.0' in project:
-        self.properties.setProperty('emu_branch', project, 'Scheduler')
+    if 'emu-2.0-release' in project:
+        self.properties.setProperty('emu_branch', 'emu-2.0-release', 'Scheduler')
     else:
         self.properties.setProperty('emu_branch', 'emu-master-dev', 'Scheduler')
 
