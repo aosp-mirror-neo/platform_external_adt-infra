@@ -14,6 +14,7 @@ DEPS = [
     'python',
     'raw_io',
     'step',
+    'json',
 ]
 
 MASTER_USER = 'user'
@@ -83,6 +84,7 @@ def RunSteps(api):
   try:
     api.python('Initialize Bot', init_bot_util_path,
                ['--build-dir', api.path['slave_build'],
+                '--props', api.json.dumps(api.properties.thaw()),
                 '--log-dir', log_dir],
                env=env)
   except api.step.StepFailure as f: # pragma: no cover

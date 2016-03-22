@@ -11,12 +11,14 @@ parser.add_argument('--build-dir', dest='build_dir', action='store',
                     help='full path to build directory')
 parser.add_argument('--log-dir', dest='log_dir', action='store',
                     help='full path to log directory')
+parser.add_argument('--props', dest='props', action='store',
+                    help='build properties')
 
 args = parser.parse_args()
-
-log_formatter = logging.Formatter('%(message)s')
 if not os.path.exists(args.log_dir):
   os.makedirs(args.log_dir)
+
+log_formatter = logging.Formatter('%(message)s')
 file_handler = logging.FileHandler(os.path.join(args.log_dir, "init_bot.log"))
 file_handler.setFormatter(log_formatter)
 file_handler.setLevel(logging.DEBUG)
@@ -29,6 +31,7 @@ logger = logging.getLogger()
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 logger.setLevel(logging.DEBUG)
+
 
 def clean_up():
   """clean up build directory and qemu-gles-[pid] files"""
@@ -54,7 +57,7 @@ def clean_up():
       if os.path.isfile(file_path):
         logger.info("Delete file %s", file_path)
         os.remove(file_path)
-      elif os.path.isdir(file_path):
+      elif os.path.isdir(file_path) and args.log_dir != f:
         logger.info("Delete directory %s", file_path)
         shutil.rmtree(file_path)
     except Exception as e:
@@ -80,6 +83,9 @@ def update_sdk(filter):
 
 if __name__ == "__main__":
   try:
+    with open(os.path.join(args.log_dir, 'build.props'), 'w') as outfile:
+        outfile.write(args.props)
+    logger.info(args.props)
     clean_up()
   except:
     pass

@@ -44,6 +44,7 @@ schema_path = os.path.join(parser_dir, "boot_time_csv_schema.json")
 result_re = re.compile(".*AVD (.*), boot time: (\d*.?\d*), expected time: \d+")
 log_dir_re = re.compile("build_(\d+)-rev_(.*).zip")
 avd_re = re.compile("([^-]*)-(.*)-(.*)-(\d+)-gpu_(.*)-api(\d+)")
+avd_android_re = re.compile("([^-]*-[^-]*)-(.*)-(.*)-(\d+)-gpu_(.*)-api(\d+)")
 start_re = re.compile(".*INFO - Running - (.*)")
 timeout_re = re.compile(".*ERROR - AVD (.*) didn't boot up within (\d+) seconds")
 fail_re = re.compile("^FAIL: test_boot_(.*)_qemu(\d+) \(test_boot.test_boot.BootTestCase\)$")
@@ -65,6 +66,19 @@ logger.setLevel(logging.DEBUG)
 hasData = False
 hasError = False
 
+def get_emu_branch(zip_path):
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as log_dir:
+            for log_file in log_dir.namelist():
+                if log_file.endswith('build.props'):
+                    with log_dir.open(log_file) as f:
+                        data = json.load(f)
+                        return data['emu_branch']
+        return "emu-master-dev"
+    except:
+        logging.info(traceback.format_exc())
+        return "emu-master-dev"
+
 # process a zip folder
 def process_zipfile(zip_name, builder, csv_data, csv_err):
     global hasData, hasError
@@ -75,6 +89,7 @@ def process_zipfile(zip_name, builder, csv_data, csv_err):
     else:
         logger.info("Skip invalid directory %s", zip_name)
         return
+    emu_branch = get_emu_branch(zip_path)
     with zipfile.ZipFile(zip_path, 'r') as log_dir:
         for x in [log_file for log_file in log_dir.namelist() if not log_file.endswith('/')]:
             if any(s in x for s in ["CTS_test", "verbose", "logcat"]):
@@ -104,8 +119,12 @@ def process_zipfile(zip_name, builder, csv_data, csv_err):
                             is_qemu2 = (fail_re.match(line).groups()[1] == "2")
                         else:
                             avd, boot_time = gr.groups()
-                        tag, abi, device, ram, gpu, api = avd_re.match(avd).groups()
-                        record_line = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (api, tag, abi, device, ram, gpu, "qemu2" if is_qemu2 else "qemu1", builder, build, revision, boot_time)
+                        if any([x in avd for x in ["android-wear", "android-tv"]]):
+                            tag, abi, device, ram, gpu, api = avd_android_re.match(avd).groups()
+                        else:
+                            tag, abi, device, ram, gpu, api = avd_re.match(avd).groups()
+
+                        record_line = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (api, tag, abi, device, ram, gpu, "qemu2" if is_qemu2 else "qemu1", builder, build, revision, boot_time, emu_branch)
                         if is_timeout or is_fail:
                             csv_err.write(record_line)
                             hasError = True

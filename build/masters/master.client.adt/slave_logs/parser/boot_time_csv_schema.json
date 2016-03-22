@@ -52,6 +52,11 @@
     "name": "boottime",
     "type": "float",
     "mode": "required"
+  },
+  {
+    "name": "emu_branch",
+    "type": "string",
+    "mode": "required"
   }
 ]
 

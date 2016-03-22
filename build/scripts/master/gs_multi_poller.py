@@ -147,6 +147,10 @@ class GSMultiPoller(base.PollingChangeSource):
           f.write("%s\n" % dst_path)
         dst_file_list.append(dst_path)
 
+      with open("project.cache", "w") as f:
+        f.write(self.project)
+        log.msg("write project.cache with content %s" % (self.project))
+
       self.master.addChange(who=self.name,
                             revision=parsed_revision,
                             files=dst_file_list,
