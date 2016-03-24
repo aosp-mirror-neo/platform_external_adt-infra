@@ -36,8 +36,7 @@ class BootTestCase(EmuBaseTestCase):
             if result:
                 self.start_proc.wait()
             time.sleep(1)
-            self.kill_proc_by_name(["crash-service"])
-            psutil.Popen(["adb", "kill-server"])
+            self.kill_proc_by_name(["crash-service", "adb"])
             os.remove(os.path.join(avd_dir, '%s.ini' % self.avd_config.name()))
             shutil.rmtree(os.path.join(avd_dir, '%s.avd' % self.avd_config.name()), ignore_errors=True)
         except:
